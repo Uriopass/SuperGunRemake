@@ -9,9 +9,11 @@ import data.TextureManager;
 
 public class Map implements Serializable
 {
-	private static final long serialVersionUID = 2L;
+	private static final long serialVersionUID = 3L;
 	ArrayList<Coord> map = new ArrayList<Coord>();
 	Coord gentil, mechant;
+	
+	public static final int GROUND = 8, LEFT = 2, RIGHT = 1;
 	
 	public Map()
 	{
@@ -40,8 +42,7 @@ public class Map implements Serializable
 	}
 	private int getNeighbour(Coord c)
 	{
-		boolean right = false;
-		boolean left = false;
+		boolean right = false, left = false;
 		for(Coord a : map)
 		{
 			if(a.getY() == c.getY())
@@ -52,13 +53,20 @@ public class Map implements Serializable
 					right = true;
 			}
 		}
-		if(right && left)
-			return 2;
-		if(right)
-			return 1;
-		if(left)
-			return -1;
-		return 0;
+		int flag = GROUND;
+		
+		if(!(right && left))
+		{
+			if(right)
+			{
+				flag = RIGHT;
+			}
+			if(left)
+			{
+				flag = LEFT;
+			}
+		}
+		return flag;
 	}
 	
 	public void computeTypes()
@@ -78,22 +86,18 @@ public class Map implements Serializable
 	{
 		for(Coord c : map)
 		{
-			String path = "";
-			switch(c.getData())
+			String path = "sol.png";
+			int flag = c.getData();
+			
+			if(flag == RIGHT)
 			{
-				case 2:
-					path = "sol.png";
-					break;
-				case 1:
-					path = "bord_g.png";
-					break;
-				case -1:
-					path = "bord_d.png";
-					break;
-				default:
-					path = "sol.png";
-					break;
+				path = "bord_g.png";
 			}
+			if(flag == LEFT)
+			{
+				path = "bord_d.png";
+			}
+			
 			GSB.sb.draw(TextureManager.get(path), c.getX()*256, c.getY()*256);
 		}
 	}

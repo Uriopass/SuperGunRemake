@@ -2,12 +2,12 @@ package game;
 
 import java.util.ArrayList;
 
-import screens.Game;
+import weapons.BulletWeapon;
+import weapons.Weapon;
 import boxs.Box;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Animation.PlayMode;
@@ -34,7 +34,8 @@ public class Personnage
 	
 	float x, y;
 	
-	float vy;
+	float vy, vx;
+	
 	ArrayList<Polygon> collisions;
 	/**
 	 * direction : True for right and false for left
@@ -42,20 +43,21 @@ public class Personnage
 	boolean direction = false;
 	float time, count;
 	int speed = 13;
+	float acceleration = 3;
 	int jumpspeed = 32;
 	int doublejumpspeed = 30;
 	int dieY;
 	int life = 100;
 	Sprite ui;
 	int score;
+	float physicsPrecision = 1;
+	float gravity = .8f;
 	
 	Rectangle hitbox = new Rectangle(x + 23, y + 3, 55, 105);
 	
 	public Weapon weapon;
 	
-	public Weapon pistol, sniper;
-	
-	ArrayList<Bullet> bullets;
+	public BulletWeapon pistol, sniper;
 	Personnage ennemy;
 	
 	public Personnage(int id, int dieY)
@@ -75,7 +77,6 @@ public class Personnage
 			ui.setPosition(0, Gdx.graphics.getHeight()-ui.getHeight());
 		}
 		
-		bullets = new ArrayList<Bullet>();
 		Array<TextureRegion> frames = new Array<TextureRegion>();
 		for(int i = 1 ; i <= 4 ; i++)
 		{
@@ -89,27 +90,29 @@ public class Personnage
 		sprite = new Animation(0.10f, frames);
 		sprite.setPlayMode(PlayMode.LOOP);
 		
-		pistol = new Weapon("pistol");
-		pistol.owner = this;
+		pistol = new BulletWeapon("pistol");
+		pistol.setOwner(this);
 		pistol.setPath("Armes/gun.png");
 		pistol.setRate(30);
 		pistol.setPadding(27, 8);
 		pistol.setMaxAmmo(30);
-		pistol.setVelocity(3);
+		pistol.setVelocity(40);
 		pistol.setDamage(15);
 		
 		weapon = pistol;
 		
-		sniper = new Weapon("sniper");
-		sniper.owner = this;
+		sniper = new BulletWeapon("sniper");
+		sniper.setOwner(this);
 		sniper.setPath("Armes/sniper.png");
 		sniper.setRate(60);
 		sniper.setPadding(27, 8);
 		sniper.setMaxAmmo(8);
-		sniper.setVelocity(7);
+		sniper.setVelocity(80);
 		sniper.setDamage(38);
+		
+		
 	}
-
+	
 	public void setEnnemy(Personnage ennemy)
 	{
 		this.ennemy = ennemy;
@@ -130,8 +133,6 @@ public class Personnage
 			GSB.sb.draw(sprite.getKeyFrame(0f), x, y);
 		}
 		weapon.render();
-		for(Bullet b : bullets)
-			b.render();
 	}
 	
 	public void renderUI()
@@ -139,8 +140,6 @@ public class Personnage
 		GSB.hud.begin();
 			ui.draw(GSB.hud);
 		GSB.hud.end();
-		Gdx.gl.glEnable(GL20.GL_BLEND);
-		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		if(id == 0)
 		{
 			GSB.sr.begin(ShapeType.Filled);
@@ -149,12 +148,12 @@ public class Personnage
 				GSB.sr.rect(ui.getX()+64, ui.getY()+93, life*1.5f, 10);
 				GSB.sr.setColor(1, ((float)0xd0)/0xFF, ((float)0x14)/0xFF, .7f);
 				// Ammo
-				GSB.sr.rect(ui.getX()+64, ui.getY()+73, ((float)weapon.ammo/weapon.maxammo)*150f, 10);
+				GSB.sr.rect(ui.getX()+64, ui.getY()+73, ((float)weapon.getAmmo()/weapon.getMaxAmmo())*150f, 10);
 			GSB.sr.end();
 			GSB.hud.begin();
 				FontManager.get(10).draw(GSB.hud, life+"/100", ui.getX()+120, ui.getY()+101);
-				FontManager.get(10).draw(GSB.hud, weapon.ammo+"/"+weapon.maxammo, ui.getX()+120, ui.getY()+81);
-				FontManager.get(12).draw(GSB.hud, "Arme : "+weapon.name, ui.getX()+80, ui.getY()+60);
+				FontManager.get(10).draw(GSB.hud, weapon.getAmmo()+"/"+weapon.getMaxAmmo(), ui.getX()+120, ui.getY()+81);
+				FontManager.get(12).draw(GSB.hud, "Arme : "+weapon.getName(), ui.getX()+80, ui.getY()+60);
 				FontManager.get(12).draw(GSB.hud, "Score", ui.getX()+10, ui.getY()+50);
 				FontManager.get(12).draw(GSB.hud, ""+score, ui.getX()+10, ui.getY()+30);
 				GSB.hud.draw(TextureManager.get("Gentil/avatar.png"), ui.getX()+5, ui.getY()+ui.getHeight()-50);
@@ -169,24 +168,31 @@ public class Personnage
 			GSB.sr.rect(ui.getX()+178, ui.getY()+93, -(life*1.5f), 10);
 			GSB.sr.setColor(1, ((float)0xd0)/0xFF, ((float)0x14)/0xFF, .7f);
 			// Ammo
-			GSB.sr.rect(ui.getX()+178, ui.getY()+73,-((float)weapon.ammo/weapon.maxammo)*150f, 10);
+			GSB.sr.rect(ui.getX()+178, ui.getY()+73,-((float)weapon.getAmmo()/weapon.getMaxAmmo())*150f, 10);
 		GSB.sr.end();
 
 			GSB.hud.begin();
 				FontManager.get(10).draw(GSB.hud, life+"/100", ui.getX()+85, ui.getY()+101);
-				FontManager.get(10).draw(GSB.hud, weapon.ammo+"/"+weapon.maxammo, ui.getX()+85, ui.getY()+81);
-				FontManager.get(12).draw(GSB.hud, "Arme : "+weapon.name, ui.getX()+64, ui.getY()+60);
+				FontManager.get(10).draw(GSB.hud, weapon.getAmmo()+"/"+weapon.getMaxAmmo(), ui.getX()+85, ui.getY()+81);
+				FontManager.get(12).draw(GSB.hud, "Arme : "+weapon.getName(), ui.getX()+64, ui.getY()+60);
 				FontManager.get(12).draw(GSB.hud, "Score", ui.getX()+190, ui.getY()+50);
 				FontManager.get(12).draw(GSB.hud, ""+score, ui.getX()+200, ui.getY()+30);
 				GSB.hud.draw(TextureManager.get("Mechant/avatar.png"), ui.getX()+192, ui.getY()+ui.getHeight()-50);
 			GSB.hud.end();
 		}
-		Gdx.gl.glDisable(GL20.GL_BLEND);
 	}
 
 	public boolean isDead()
 	{
 		return y < dieY || life <= 0;
+	}
+	/**
+	 * direction : True for right and false for left
+	 * @return the direction
+	 */
+	public boolean getDirection()
+	{
+		return direction;
 	}
 	
 	public void setLocation(int x, int y)
@@ -195,26 +201,13 @@ public class Personnage
 		this.y = y;
 	}
 	
-	public void setOrigin(int x, int y)
+	public void setOrigin(float f, float g)
 	{
-		this.originX = x;
-		this.originY = y;
-		setLocation(x, y);
+		this.originX = (int)f;
+		this.originY = (int)g;
+		setLocation(originX, originY);
 	}
 
-	public void testBullets(ArrayList<Bullet> other)
-	{
-		for(int i = 0 ; i < other.size() ; i++)
-		{
-			Bullet b = other.get(i);
-			if(hitbox.overlaps(b.hitbox))
-			{
-				life -= b.getDmg();
-				other.remove(i);
-				i--;
-			}
-		}
-	}
 	public void testBoxs(ArrayList<Box> other)
 	{
 		for(int i = 0 ; i < other.size() ; i++)
@@ -228,19 +221,33 @@ public class Personnage
 			}
 		}
 	}
-	
-	public ArrayList<Bullet> getBullets()
-	{
-		return bullets;
-	}
-	
 	public void update(float delta)
 	{
 		moving = false;
 		time += delta;
-		y += vy;
-		vy -= 1;
 		
+		x += vx*delta*60;
+		if(collision())
+		{
+			x -= vx*delta*60;
+			vx = 0;
+			moving = false;
+		}
+		
+		if(vx != 0)
+		{
+			moving = true;
+			
+			vx += ((vx < 0)?1:-1)*delta*60;
+			if(Math.abs(vx) < delta*60*2)
+			{
+				vx = 0;
+			}
+		}
+		else
+		{
+			moving = false;
+		}
 		count += delta;
 		if(count > 1)
 		{
@@ -249,47 +256,66 @@ public class Personnage
 		}
 		if(life > 100)
 			life = 100;
-		
-		if(collision())
+
+		if(!onGround() || jumping)
 		{
-			if(vy > 0)
+			vy -= gravity*(delta*60);
+			y += vy*delta*60;
+			if(collision())
 			{
-				while(collision())
+				if(vy > 0)
 				{
-					y -= 3;
+					while(collision())
+					{
+						y -= physicsPrecision;
+					}
+				}
+				if(vy < 0)
+				{
+					jumping = false;
+					doublejump = false;
+					float max = -1000000;
+					for(int i = 1 ; i < collidedWith.getTransformedVertices().length ; i += 2)
+						if(collidedWith.getTransformedVertices()[i] > max)
+							max = collidedWith.getTransformedVertices()[i];
+					y = max-2.3f;
+				}
+				vy = 0;
+			}
+			else
+			{
+				if(!jumping)
+				{
+					doublejump = true;
 				}
 			}
-			if(vy < 0)
-			{
-				jumping = false;
-				float max = -1000000;
-				for(int i = 1 ; i < collidedWith.getTransformedVertices().length ; i += 2)
-					if(collidedWith.getTransformedVertices()[i] > max)
-						max = collidedWith.getTransformedVertices()[i];
-				y = max - 2;
-			}
-			vy = 0;
 		}
-		
 		if(isDead())
 		{
 			ennemy.score++;
 			respawn();
 		}
 		
-		weapon.update();
-		for(Bullet b : bullets)
-		{
-			b.update();
-		}
-		updateBulletCollision();
+		weapon.update(delta);
 	}
 
+	private boolean onGround()
+	{
+		hitbox.setPosition(x + 20, y-2);
+		for(int i = 0 ; i < collisions.size() ; i++)
+			if(isCollision(collisions.get(i), hitbox))
+			{
+				collidedWith = collisions.get(i);
+				return true;
+			}
+		return false;
+	}
+	
 	public void addCollision(Coord c)
 	{
 		int type = c.getData();
 		float[] vertices = null;
-		if(type == 2 || type == 0)
+		if(type == Map.GROUND)
 		{
 			vertices = new float[4 * 2];
 			vertices[0] = c.getX() * 256;
@@ -304,7 +330,7 @@ public class Personnage
 			vertices[6] = c.getX() * 256;
 			vertices[7] = c.getY() * 256 + 210;
 		}
-		if(type == 1)
+		if(type == Map.RIGHT)
 		{
 			vertices = new float[5 * 2];
 			vertices[0] = c.getX() * 256 + 10;
@@ -322,7 +348,7 @@ public class Personnage
 			vertices[8] = c.getX() * 256 + 256;
 			vertices[9] = c.getY() * 256 + 210;
 		}
-		if(type == -1)
+		if(type == Map.LEFT)
 		{
 			vertices = new float[5 * 2];
 			vertices[0] = c.getX() * 256;
@@ -341,9 +367,14 @@ public class Personnage
 			vertices[9] = c.getY() * 256 + 210;
 		}
 		collisions.add(new Polygon(vertices));
+		
+		while(collision())
+		{
+			y += physicsPrecision;
+		}
 	}
 	
-	private boolean isCollision(Polygon p, Rectangle r)
+	public boolean isCollision(Polygon p, Rectangle r)
 	{
 		Polygon rPoly = new Polygon(new float[] { 0, 0, r.width, 0, r.width, r.height, 0, r.height });
 		rPoly.setPosition(r.x, r.y);
@@ -366,26 +397,19 @@ public class Personnage
 		return false;
 	}
 
+	public void testWeapon(Personnage enemy)
+	{
+		enemy.getWeapon().testHit(this);
+	}
+	
 	public Weapon getWeapon()
 	{
 		return weapon;
 	}
 	
-	public void updateBulletCollision()
+	public Rectangle getHitbox()
 	{
-		for(int i = 0 ; i < bullets.size() ; i++)
-		{
-			Rectangle hit = bullets.get(i).getHitbox();
-			for(int j = 0 ; j < collisions.size() ; j++)
-			{
-				if(isCollision(collisions.get(j), hit))
-				{
-					bullets.remove(i);
-					i--;
-					break;
-				}
-			}
-		}
+		return hitbox;
 	}
 	
 	/**
@@ -393,9 +417,9 @@ public class Personnage
 	 * 
 	 * @param direction
 	 */
-	public void move(boolean direction)
+	public void move(boolean direction, float delta)
 	{
-
+		moving = true;
 		if(this.direction != direction)
 		{
 			for(TextureRegion a : sprite.getKeyFrames())
@@ -406,40 +430,27 @@ public class Personnage
 		this.direction = direction;
 		if(direction)
 		{
-			// Right
-
-			x += speed;
-			if(collision())
-			{
-				x -= speed;
-			}
-			else
-			{
-				moving = true;
-			}
+			vx += acceleration*delta*60;
 		}
 		else
 		{
-			x -= speed;
-			if(collision())
-			{
-				x += speed;
-			}
-			else
-			{
-				moving = true;
-			}
+			vx += -acceleration*delta*60;
 		}
+		if(Math.abs(vx) > speed)
+		{
+			vx = ((vx > 0)?1:-1)*speed;
+		}
+		
 	}
 
 	public void fire()
 	{
-		if(weapon.canShoot())
+		if(weapon instanceof BulletWeapon)
 		{
-			Bullet shoted = weapon.shoot();
-			if(shoted != null)
+			BulletWeapon casted = (BulletWeapon) weapon;
+			if(casted.canShoot())
 			{
-				bullets.add(shoted);
+				casted.fire();
 			}
 		}
 	}
@@ -466,6 +477,8 @@ public class Personnage
 		{
 			doublejump = false;
 			vy = doublejumpspeed;
+			jumping = true;
+			return;
 		}
 		if(!jumping)
 		{
@@ -497,6 +510,11 @@ public class Personnage
 		weapon.reset();
 		weapon = pistol;
 		weapon.reset();
+		
+		while(collision())
+		{
+			y += physicsPrecision;
+		}
 	}
 
 	public void setOrigin(Coord pos)
@@ -510,4 +528,10 @@ public class Personnage
 		if(life > 100)
 			life = 100;
 	}
+
+	public ArrayList<Polygon> getCollisions()
+	{
+		return collisions;
+	}
+
 }

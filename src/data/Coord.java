@@ -5,30 +5,37 @@ import java.io.Serializable;
 public class Coord implements Serializable
 {
 	private static final long serialVersionUID = 1L;
-	int x, y;
+	float x, y;
 	int additionalData; // If i want to transmit something
 	
-	public Coord(int x, int y)
+	public Coord(float f, float g)
 	{
-		this.x = x;
-		this.y = y;
+		this.x = f;
+		this.y = g;
 	}
 	
-	public int getX()
+	public Coord(Coord coord)
+	{
+		this.x = coord.x;
+		this.y = coord.y;
+		this.additionalData = coord.additionalData;
+	}
+
+	public float getX()
 	{
 		return x;
 	}
-	public int getY()
+	public float getY()
 	{
 		return y;
 	}
-	public void setX(int x)
+	public void setX(float x)
 	{
 		this.x = x;
 	}
-	public void setY(int y)
+	public void setY(float f)
 	{
-		this.y = y;
+		this.y = f;
 	}
 	public void setData(int data)
 	{

@@ -12,6 +12,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 
@@ -24,12 +25,13 @@ import data.TextureManager;
 public class Editor implements Screen
 {
 	Map map;
-	BigButton save, exit;
+	BigButton save, exit, changemode;
 	Sprite gentil, mechant;
 	
 	public Editor()
 	{
 		map = MapManager.load("editor");
+		map.computeTypes();
 		Game.camera.zoom = 2f;
 		GSB.setUpdateShapeRenderer(true);
 		
@@ -38,6 +40,8 @@ public class Editor implements Screen
 		gentil.flip(true, false);
 		mechant = new Sprite(SpriteManager.get("Mechant/gauche2.png"));
 		mechant.setPosition(map.getMechantPos().getX(), map.getMechantPos().getY());
+		
+		delete = TextureManager.getPixmap("delete.png");
 		
 		save = new BigButton("Save")
 		{
@@ -61,6 +65,20 @@ public class Editor implements Screen
 		};
 		
 		exit.setLocation(Gdx.graphics.getWidth()-exit.getWidth(), 0);
+		
+		changemode = new BigButton("Switch mode")
+		{
+			protected void onClick() 
+			{
+				deletemode = !deletemode;
+				if(deletemode)
+					Gdx.input.setCursorImage(delete, 16, 16);
+				else
+					Gdx.input.setCursorImage(null, 0, 0);
+			};
+		};
+		
+		changemode.setLocation(0, 0);
 	}
 	
 	Point lastClick = new Point(0, 0);
@@ -73,24 +91,21 @@ public class Editor implements Screen
 		GSB.sb.begin();
 		for(Coord c : map.getCoords())
 		{
-			String path = "";
-			switch(c.getData())
+			String path = "sol.png";
+			int flag = c.getData();
+			
+			if(flag == Map.RIGHT)
 			{
-				case 2:
-					path = "sol.png";
-					break;
-				case 1:
-					path = "bord_g.png";
-					break;
-				case -1:
-					path = "bord_d.png";
-					break;
-				default:
-					path = "sol.png";
-					break;
+				path = "bord_g.png";
 			}
+			if(flag == Map.LEFT)
+			{
+				path = "bord_d.png";
+			}
+			System.out.println(c + " : "+ flag);
 			GSB.sb.draw(TextureManager.get(path), c.getX()*256, c.getY()*256);
 		}
+		
 		gentil.draw(GSB.sb);
 		mechant.draw(GSB.sb);
 		GSB.sb.end();
@@ -116,7 +131,7 @@ public class Editor implements Screen
 		 Gdx.gl.glEnable(GL20.GL_BLEND);
 		    Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 			GSB.sr.begin(ShapeType.Filled);
-			if(contains(gridx, gridy))
+			if(deletemode)
 				GSB.sr.setColor(1f, 0, 0, .2f);
 			else
 				GSB.sr.setColor(.9f, .9f, .9f, .3f);
@@ -128,49 +143,25 @@ public class Editor implements Screen
 		GSB.hud.begin();
 			save.render(0);
 			exit.render(0);
+			changemode.render(0);
 		GSB.hud.end();
 		
 		update(delta, gridx, gridy, x, y);
 	}
-	private int getNeighbour(Coord c)
-	{
-		boolean right = false;
-		boolean left = false;
-		for(Coord a : map.getCoords())
-		{
-			if(a.getY() == c.getY())
-			{
-				if(a.getX() == c.getX()-1)
-					left = true;
-				if(a.getX() == c.getX()+1)
-					right = true;
-			}
-		}
-		if(right && left)
-			return 2;
-		if(right)
-			return 1;
-		if(left)
-			return -1;
-		return 0;
-	}
-	
-	private boolean contains(int x, int y)
-	{
-		for(Coord c : map.getCoords())
-			if(c.getX() == x && c.getY() == y)
-				return true;
-		return false;
-	}
 	
 	public boolean anythingElseIsHovered(float x, float y)
 	{
-		return save.isHovered() || gentil.getBoundingRectangle().contains(x, y) || mechant.getBoundingRectangle().contains(x, y);
+		return changemode.isHovered() || save.isHovered() || gentil.getBoundingRectangle().contains(x, y) || mechant.getBoundingRectangle().contains(x, y);
 	}
 	boolean dragging;
 	int whichone;
+	Pixmap delete;
+	
+	boolean deletemode = false;
+	
 	public void update(float delta, int gridx, int gridy, float x, float y)
 	{
+		
 		if(Gdx.input.isButtonPressed(Input.Buttons.RIGHT) && !Gdx.input.justTouched())
 		{
 			Game.camera.translate((lastClick.x - Gdx.input.getX())*Game.camera.zoom, 0);
@@ -183,28 +174,26 @@ public class Editor implements Screen
 			lastClick.x = Gdx.input.getX();
 			lastClick.y = Gdx.input.getY();
 		}		
-		if(((Gdx.input.isButtonPressed(Input.Buttons.LEFT) && Gdx.input.justTouched()) || Gdx.input.isButtonPressed(Input.Buttons.MIDDLE)) && !anythingElseIsHovered(x, y))
+		if(Gdx.input.isButtonPressed(Input.Buttons.LEFT) && !anythingElseIsHovered(x, y))
 		{
-			boolean removed = false;
 			ArrayList<Coord> mapCoords = map.getCoords();
-			for(int i = 0 ; i < mapCoords.size() ; i++)
+			if(deletemode)
 			{
-				Coord c = mapCoords.get(i);
-				if(c.getX() == gridx && c.getY() == gridy)
+				for(int i = 0 ; i < mapCoords.size() ; i++)
 				{
-					mapCoords.remove(i);
-					removed = true;
+					Coord c = mapCoords.get(i);
+					if(c.getX() == gridx && c.getY() == gridy)
+					{
+						mapCoords.remove(i);
+					}
 				}
 			}
-			if(!removed)
+			else
 			{
 				mapCoords.add(new Coord(gridx, gridy));
 			}
 
-			for(Coord c : map.getCoords())
-			{
-				c.setData(getNeighbour(c));
-			}
+			map.computeTypes();
 		}
 		if(dragging)
 		{
@@ -238,8 +227,10 @@ public class Editor implements Screen
 		{
 			map.getCoords().clear();
 		}
+		
 		save.update();
 		exit.update();
+		changemode.update();
 		Game.camera.zoom += ScrollClass.getScroll()/5f;
 		Game.camera.update();
 		GSB.update(Game.camera);

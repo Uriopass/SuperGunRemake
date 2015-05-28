@@ -10,18 +10,15 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 
-import data.FontManager;
 import data.GSB;
-import data.SpriteManager;
 
 public class MainMenu implements Screen
 {
 	BigButton play, exit, editor;
 	ArrayList<ParticleEmitter> pe = new ArrayList<ParticleEmitter>();
 	ParticleEmitter mouse;
-	Sprite tete;
+	
 	public MainMenu()
 	{
 		System.out.println();
@@ -35,8 +32,6 @@ public class MainMenu implements Screen
 		};
 		play.setLocation(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2+100);
 		play.center(true, false);
-		
-		tete = new Sprite(SpriteManager.get("tete.jpg"));
 		
 		editor = new BigButton("Editor")
 		{
@@ -85,13 +80,10 @@ public class MainMenu implements Screen
 		for(ParticleEmitter p : pe)
 			p.render();
 		mouse.render();
-		tete.rotate(1);
 		GSB.hud.begin();
 			play.render(0);
 			editor.render(0);
 			exit.render(0);
-			tete.draw(GSB.hud);
-			FontManager.get(30).draw(GSB.hud, "AenoaNET, notre dieu a tous", 300, 600);
 		GSB.hud.end();
 		
 		update(delta);

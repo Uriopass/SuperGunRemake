@@ -5,6 +5,8 @@ import game.Personnage;
 
 import java.util.ArrayList;
 
+import com.badlogic.gdx.math.Polygon;
+
 import data.Coord;
 
 public class WorldBoxs
@@ -12,12 +14,26 @@ public class WorldBoxs
 	ArrayList<Box> boxs;
 	Map m;
 	float time = 0;
+	static float maxY;
+	static float minx, maxx;
 	
 	public WorldBoxs()
 	{
 		boxs = new ArrayList<Box>();
 	}
 	
+	public static void setMaxY(float maxy)
+	{
+		WorldBoxs.maxY = maxy;
+	}
+	public static void setMaxx(float maxx)
+	{
+		WorldBoxs.maxx = maxx;
+	}
+	public static void setMinx(float minx)
+	{
+		WorldBoxs.minx = minx;
+	}
 	public void setMap(Map m)
 	{
 		this.m = m;
@@ -44,16 +60,29 @@ public class WorldBoxs
 			}
 		}
 		
+		for(Box b : boxs)
+		{
+			if(!b.onground)
+			{
+				b.position.setY(b.position.getY() - 10);
+			}
+			for(Polygon p : gentil.getCollisions())
+			{
+				if(gentil.isCollision(p, b.getBoundingBox()))
+				{
+					b.onground = true;
+				}
+			}
+		}
+		
 		gentil.testBoxs(boxs);
 		mechant.testBoxs(boxs);
 	}
 	
 	private Coord getCoord()
 	{
-		int size = m.getCoords().size();
-		int index = (int)(Math.random()*size);
-		
-		return m.getCoords().get(index);
+		Coord c = new Coord((float) (Math.random()*(maxx-minx)+minx), maxY);
+		return c;
 	}
 	
 	public void render()

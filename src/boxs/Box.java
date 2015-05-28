@@ -12,6 +12,7 @@ public class Box
 {
 	Sprite image;
 	Coord position;
+	boolean onground = false;
 	
 	public Box(Coord pos)
 	{
@@ -32,6 +33,7 @@ public class Box
 	
 	public void render()
 	{
+		image.setCenter(position.getX(), position.getY());
 		image.draw(GSB.sb);
 	}
 

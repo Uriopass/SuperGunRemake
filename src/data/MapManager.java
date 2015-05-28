@@ -38,6 +38,7 @@ public class MapManager
 			if(!Gdx.files.internal(path+".spg").exists())
 			{
 				Gdx.files.internal(path+".spg").file().createNewFile();
+				save(getDefaultMap(), path);
 				return getDefaultMap();
 			}
 			FileInputStream fin = new FileInputStream(Gdx.files.internal(path+".spg").file());

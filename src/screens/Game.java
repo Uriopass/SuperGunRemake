@@ -7,6 +7,7 @@ import java.awt.Point;
 import java.util.ArrayList;
 
 import ui_buttons.ScrollClass;
+import weapons.BulletWeapon;
 import boxs.WorldBoxs;
 
 import com.badlogic.gdx.Gdx;
@@ -74,18 +75,36 @@ public class Game implements Screen
 		*/
 		//MapManager.save(m.getCoords(), "test");
 		
-		int minY = 0;
+		float minY = 1000000000, maxy = -10000000;
+		float minx = 1000000000, maxx = -10000000;
 		for(Coord c : m.getCoords())
+		{
 			if(c.getY() < minY)
 				minY = c.getY();
+			if(c.getY() > maxy)
+				maxy = c.getY();
+			if(c.getX() < minx)
+				minx = c.getX();
+			if(c.getX() > maxx)
+				maxx = c.getX();
+		}
+		maxy += 10;
+		WorldBoxs.setMaxY(maxy);
 		minY -= 10;
-		
 		minY *= 256;
+
+		WorldBoxs.setMaxx(maxx);
+		WorldBoxs.setMinx(minx);
+		minx -= 20;
+		maxx += 20;
+		minx *= 256;
+		maxx *= 256;
+		BulletWeapon.setMinMaxX((int)minx, (int)maxx);
 		
 		players = new ArrayList<Personnage>();
 		
-		players.add(new Personnage(0, minY));
-		players.add(new Personnage(1, minY));
+		players.add(new Personnage(0, (int)minY));
+		players.add(new Personnage(1, (int)minY));
 		players.get(0).setOrigin(m.getGentilPos());
 		players.get(1).setOrigin(m.getMechantPos());
 		players.get(0).setEnnemy(players.get(1));
@@ -98,14 +117,21 @@ public class Game implements Screen
 			}
 		}
 		GSB.setUpdateShapeRenderer(false);
+		
+
+		Gdx.gl.glEnable(GL20.GL_BLEND);
+		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 	}
 
 	Point lastClick = new Point(0, 0);
 
 	float time = 0;
+	boolean matrix = false;
 	@Override
 	public void render(float delta)
 	{
+		if(matrix)
+			delta /= 3;
 		time += delta;
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -125,11 +151,11 @@ public class Game implements Screen
 		
 		for(Personnage p : players)
 			p.renderUI();
+		
 		//players.get(0).renderCollision();
 		update(delta);
 	}
 
-	
 	public void update(float delta)
 	{
 		if(Gdx.input.isButtonPressed(Input.Buttons.LEFT) && !Gdx.input.justTouched())
@@ -149,13 +175,17 @@ public class Game implements Screen
 		for(Personnage p : players)
 			p.update(delta);
 		
+		if(Gdx.input.isKeyJustPressed(Input.Keys.M))
+		{
+			matrix = !matrix;
+		}
 		if(Gdx.input.isKeyPressed(Input.Keys.S))
 		{
-			players.get(0).move(false);
+			players.get(0).move(false, delta);
 		}
 		if(Gdx.input.isKeyPressed(Input.Keys.F))
 		{
-			players.get(0).move(true);
+			players.get(0).move(true, delta);
 		}
 		if(Gdx.input.isKeyJustPressed(Input.Keys.E))
 		{
@@ -169,11 +199,11 @@ public class Game implements Screen
 		
 		if(Gdx.input.isKeyPressed(Input.Keys.LEFT))
 		{
-			players.get(1).move(false);
+			players.get(1).move(false, delta);
 		}
 		if(Gdx.input.isKeyPressed(Input.Keys.RIGHT))
 		{
-			players.get(1).move(true);
+			players.get(1).move(true, delta);
 		}
 		if(Gdx.input.isKeyJustPressed(Input.Keys.UP))
 		{
@@ -183,8 +213,8 @@ public class Game implements Screen
 		{
 			players.get(1).fire();
 		}
-		players.get(0).testBullets(players.get(1).getBullets());
-		players.get(1).testBullets(players.get(0).getBullets());
+		players.get(0).testWeapon(players.get(1));
+		players.get(1).testWeapon(players.get(0));
 		
 		boxs.update(delta, players.get(0), players.get(1));
 		
@@ -208,7 +238,13 @@ public class Game implements Screen
 		
 		double distance = Math.sqrt(Math.pow(players.get(0).getX() - players.get(1).getX(), 2) + Math.pow(players.get(0).getY() - players.get(1).getY(), 2));
 			
-		camera.zoom = 2.5f + (float)(distance/(Gdx.graphics.getWidth()));	
+		camera.position.x = Math.round(camera.position.x*1000)/1000f;
+		camera.position.y = Math.round(camera.position.y*1000)/1000f;
+		
+		camera.zoom = 2.5f + (float)(distance/(Gdx.graphics.getWidth()));
+		
+		camera.zoom = Math.round(camera.zoom*1000)/1000f;
+		
 	}
 	
 	public void resize(int width, int height)
