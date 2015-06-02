@@ -28,6 +28,7 @@ public class Box
 	
 	public Rectangle getBoundingBox()
 	{
+		image.setCenter(position.getX(), position.getY());
 		return image.getBoundingRectangle();
 	}
 	

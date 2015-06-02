@@ -4,26 +4,31 @@ public class TodoList
 {
 	/**
 	 * Features : 
-	 * - Push enemy mode
+	 * --> (DONE] Trololo : http://lablanchisserie.fr/Parissou/SupergunRemake/DoubleIASupergun.gif
+	 * - [DONE] Push enemy mode
 	 * --> [DONE] Horizontal velocity
-	 * - Die blood effect
+	 * - [DONE] Blood effect
+	 * - More customizable mode
 	 * - [DONE] Better editor
 	 * --> [DONE] Two modes, create and destroy
 	 * - [DONE] Box spawn randomly in the air and drop
-	 * - Better bullets
+	 * - [DONE] Better bullets
 	 * - More weapons
-	 * --> [GOING ON] Shotgun
+	 * --> [DONE] Shotgun
+	 * --> [DONE] Sniper
+	 * --> [DONE] Rifle (mitraillette)
 	 * --> bazooka
 	 * --> sword.
+	 * --> Flamelauncher
 	 * - [DONE] Matrix mode (manage everything with delta)
-	 * - Options
+	 * - [DONE] Options
 	 * --> Different modes, graphism, key bindings, etc..
 	 * - More modes
-	 * --> Normal
-	 * --> Brawl
+	 * --> [DONE] Normal
+	 * --> [DONE] Brawl
 	 * --> Parkour
 	 * -- --> Parkour generator
-	 * 
+	 * - [DONE] AI.
 	 * - online multiplayer
 	 * Bugs : 
 	 * - No normal jump when falling [FIXED]

@@ -5,6 +5,8 @@ import game.Personnage;
 
 import java.util.ArrayList;
 
+import screens.Options;
+
 import com.badlogic.gdx.math.Polygon;
 
 import data.Coord;
@@ -45,18 +47,27 @@ public class WorldBoxs
 		if(time > 1)
 		{
 			time -= 1;
-			double random = Math.random();
-			if(random < AmmunitionBox.probability)
+			if(Math.random() < AmmunitionBox.probability && Options.ammoActivated)
 			{
 				boxs.add(new AmmunitionBox(getCoord()));
 			}
-			if(random < HealthBox.probability)
+			if(Math.random() < HealthBox.probability)
 			{
 				boxs.add(new HealthBox(getCoord()));
 			}
-			if(random < SniperBox.probability)
+			if(Math.random() < SniperBox.probability)
 			{
 				boxs.add(new SniperBox(getCoord()));
+			}
+
+			if(Math.random() < ShotgunBox.probability)
+			{
+				boxs.add(new ShotgunBox(getCoord()));
+			}
+			
+			if(Math.random() < RifleBox.probability)
+			{
+				boxs.add(new RifleBox(getCoord()));
 			}
 		}
 		
@@ -64,12 +75,16 @@ public class WorldBoxs
 		{
 			if(!b.onground)
 			{
-				b.position.setY(b.position.getY() - 10);
+				b.position.setY(b.position.getY() - 10*delta*60);
 			}
 			for(Polygon p : gentil.getCollisions())
 			{
 				if(gentil.isCollision(p, b.getBoundingBox()))
 				{
+					while(gentil.isCollision(p, b.getBoundingBox()))
+					{
+						b.position.setY(b.position.getY() + 3);
+					}
 					b.onground = true;
 				}
 			}

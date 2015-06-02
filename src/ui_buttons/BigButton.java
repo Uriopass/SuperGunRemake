@@ -43,9 +43,14 @@ public class BigButton
 		FontManager.get(20).draw(GSB.hud, name, x+(width-gl.width)/2, 15+drawy+(height-gl.height)/2);
 	}
 	
+	public void setName(String name)
+	{
+		this.name = name;
+	}
+	
 	public boolean isHovered()
 	{
-		return position == ButtonType.HOVER;
+		return position == ButtonType.HOVER || position == ButtonType.CLICK;
 	}
 	
 	public String getName()

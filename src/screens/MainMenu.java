@@ -15,7 +15,7 @@ import data.GSB;
 
 public class MainMenu implements Screen
 {
-	BigButton play, exit, editor;
+	BigButton play, exit, editor, options;
 	ArrayList<ParticleEmitter> pe = new ArrayList<ParticleEmitter>();
 	ParticleEmitter mouse;
 	
@@ -43,6 +43,17 @@ public class MainMenu implements Screen
 
 		editor.setLocation(play.getX(), play.getY()-play.getHeight());
 		
+		options = new BigButton("Options")
+		{
+			protected void onClick() 
+			{
+				((com.badlogic.gdx.Game)Gdx.app.getApplicationListener()).setScreen(new Options());
+			};
+		};
+
+		options.setLocation(editor.getX(), editor.getY()-editor.getHeight());
+		
+		
 		exit = new BigButton("Exit")
 		{
 			@Override
@@ -51,12 +62,14 @@ public class MainMenu implements Screen
 				Gdx.app.exit();
 			}
 		};
-		exit.setLocation(editor.getX(), editor.getY()-editor.getHeight());
+		exit.setLocation(options.getX(), options.getY()-options.getHeight());
 		
-		for(int i = 0 ; i < 3 ; i++)
-			pe.add(new ParticleEmitter(play.getX() + 50*(i+1), play.getY()+25, 3f, 0f));
-		mouse = new ParticleEmitter(0, 0, 2, 0);
-		mouse.setRate(3);
+			pe.add(new ParticleEmitter(play.getX() + play.getWidth()/2, play.getY()+25, 3f));
+			pe.get(0).setRate(5);
+		
+		mouse = new ParticleEmitter(0, 0, 2f);
+		mouse.enableGravity(-.1f);
+		mouse.setRate(100);
 		
 	}
 	
@@ -83,6 +96,7 @@ public class MainMenu implements Screen
 		GSB.hud.begin();
 			play.render(0);
 			editor.render(0);
+			options.render(0);
 			exit.render(0);
 		GSB.hud.end();
 		
@@ -98,6 +112,7 @@ public class MainMenu implements Screen
 		play.update();
 		exit.update();
 		editor.update();
+		options.update();
 		if(Gdx.input.isButtonPressed(Input.Buttons.LEFT))
 		{
 			mouse.setX(Gdx.input.getX());
@@ -115,10 +130,10 @@ public class MainMenu implements Screen
 		count = 0;
 		for(ParticleEmitter p : pe)
 		{
-			p.update();
+			p.update(delta);
 			count += p.getParticleCount();
 		}
-		mouse.update();
+		mouse.update(delta);
 		count += mouse.getParticleCount();
 	}
 	@Override

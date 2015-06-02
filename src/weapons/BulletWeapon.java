@@ -4,7 +4,13 @@ import game.Personnage;
 
 import java.util.ArrayList;
 
+import screens.Options;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 import data.TextureManager;
@@ -16,13 +22,15 @@ public class BulletWeapon extends Weapon
 	float lastFire = 0;
 	int damage, velocity;
 	static int minX, maxX;
+	float velocityScale = 1.5f;
 	
 	ArrayList<Bullet> bullets;
-	
-	public BulletWeapon(String name)
+	Sound fire;
+	public BulletWeapon()
 	{
-		super(name);
+		super();
 		bullets = new ArrayList<Bullet>();
+		fire = Gdx.audio.newSound(Gdx.files.internal("Armes/pistol.mp3"));
 	}
 	public void setRate(int rate)
 	{
@@ -40,6 +48,15 @@ public class BulletWeapon extends Weapon
 		return lastFire <= 0;
 	}
 	
+	public void transfer(BulletWeapon other)
+	{
+		for(Bullet b : other.bullets)
+		{
+			bullets.add(b);
+		}
+		this.lastFire = other.lastFire;
+	}
+	
 	public void setDamage(int damage)
 	{
 		this.damage = damage;
@@ -54,7 +71,10 @@ public class BulletWeapon extends Weapon
 	{
 		lastFire = fireRate;
 		Texture text = TextureManager.get(path);
-		ammo--;
+		if(Options.ammoActivated)
+		{
+			ammo--;
+		}
 		if(ammo < 0)
 		{
 			ammo = 0;
@@ -63,9 +83,13 @@ public class BulletWeapon extends Weapon
 		{
 			for(Bullet b : getFiredBullets(text))
 			{
-				if(owner.getDirection())
-					b.vx = -b.vx;
+				if(!owner.getDirection())
+				{
+					b.inverteVx();
+					b.x -= owner.getHitbox().width + text.getWidth();
+				}
 				bullets.add(b);
+				onFire();
 			}
 		}
 	}
@@ -73,7 +97,7 @@ public class BulletWeapon extends Weapon
 	protected ArrayList<Bullet> getFiredBullets(Texture text)
 	{
 		ArrayList<Bullet> toShoot = new ArrayList<Bullet>();
-		toShoot.add(new Bullet(owner.getX() + paddingx + text.getWidth(), owner.getY() + paddingy + text.getHeight()/2 + 5, velocity, 10, damage));
+		toShoot.add(new Bullet(owner.getX() + paddingx, owner.getY() + paddingy + text.getHeight()/2 + 5, velocity, 0, damage));
 		return toShoot;
 	}
 	
@@ -82,10 +106,10 @@ public class BulletWeapon extends Weapon
 	{
 		for(int i = 0 ; i < bullets.size() ; i++)
 		{
-			Vector2 hit = bullets.get(i).getCollision();
+			Vector2[] hit = bullets.get(i).getCollision(1/60f);
 			for(int j = 0 ; j < owner.getCollisions().size() ; j++)
 			{
-				if(owner.getCollisions().get(j).contains(hit.x, hit.y))
+				if(owner.getCollisions().get(j).contains(hit[0].x, hit[0].y))
 				{
 					bullets.remove(i);
 					i--;
@@ -95,10 +119,20 @@ public class BulletWeapon extends Weapon
 		}
 	}
 	
+	boolean once;
+	
 	@Override
 	public void update(float delta)
 	{
 		lastFire-=1*delta*60;
+		
+		if(lastFire > 20)
+			once = true;
+		if(lastFire <= 20 && once)
+		{
+			once = false;
+			onReload();
+		}
 		
 		for(int i = 0 ; i < bullets.size() ; i++)
 		{
@@ -122,31 +156,75 @@ public class BulletWeapon extends Weapon
 			b.render();
 	}
 	
+	public boolean isCollision(Vector2[] seg, Rectangle r)
+	{
+		Vector2 a, b;
+		a = new Vector2(r.getX(), r.getY());
+		b = new Vector2(r.getX()+r.getWidth(), r.getY());
+		if(Intersector.intersectSegments(seg[0], seg[1], a, b, null))
+		{
+			return true;
+		}
+		b.x = r.getX();
+		b.y = r.getY() + r.getHeight();
+		if(Intersector.intersectSegments(seg[0], seg[1], a, b, null))
+		{
+			return true;
+		}
+		a.x = r.getX() + r.getWidth();
+		a.y = r.getY() + r.getHeight();
+		if(Intersector.intersectSegments(seg[0], seg[1], a, b, null))
+		{
+			return true;
+		}
+		
+		b.x = r.getX() + r.getWidth();
+		b.y = r.getY();
+		if(Intersector.intersectSegments(seg[0], seg[1], a, b, null))
+		{
+			return true;
+		}
+		return false;
+	}
+	
 	@Override
-	public void testHit(Personnage pers)
+	public void testHit(Personnage pers, float delta)
 	{
 		for(int i = 0 ; i < bullets.size() ; i++)
 		{
 			Bullet b = bullets.get(i);
-			Vector2 pos = b.getCollision();
+			Vector2[] pos = b.getCollision(delta);
 			
-			if(pers.getHitbox().contains(pos))
+			float lifemultiplier = 1+2*(100f-pers.getLife())/100f;
+			
+			
+			if(isCollision(pos, pers.getVxHitbox()) || pers.getVxHitbox().contains(pos[0]))
 			{
 				pers.addLife(-damage);
-				bullets.remove(i);
-				i--;
-				continue;
-			}
-			
-			pos.add(b.vx/2, b.vy/2);
-			
-			if(pers.getHitbox().contains(pos))
-			{
-				pers.addLife(-damage);
+				
+				if(Options.brawlModeActivated)
+				{
+					pers.setVx(pers.getVx()/2 + b.vx*velocityScale*lifemultiplier);
+				}
 				bullets.remove(i);
 				i--;
 			}
 		}
+	}
+	
+	public void setVelocityScale(float velocityScale)
+	{
+		this.velocityScale = velocityScale;
+	}
+	
+	public void onFire()
+	{
+		
+	}
+	
+	public void onReload()
+	{
+		
 	}
 	
 	@Override

@@ -1,17 +1,19 @@
 package particles;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 
 import data.GSB;
+import data.TextureManager;
 
 public class Particle
 {
 	public float x, y;
 	float vx, vy;
-	float deceleration;
 	Color c;
-
+	float gravity = 0;
+	float life = 2;
+	String texture = null;
+	
 	public Particle(int x, int y)
 	{
 		this.x = x;
@@ -28,50 +30,48 @@ public class Particle
 		this.vx = x;
 		this.vy = y;
 	}
-	public void setDeceleration(float deceleration)
+	
+	public void setLife(float life)
 	{
-		this.deceleration = deceleration;
+		this.life = life;
 	}
-	public void updateParticle()
+	
+	public void updateParticle(float delta)
 	{
-		x += vx;
-		y += vy;
-		if(vx < 0)
-		{
-			vx += deceleration;
-			if(vx > 0)
-				vx = 0;
-		}
-		else
-		{
-			vx -= deceleration;
-			if(vx < 0)
-				vx = 0;
-		}
-		if(vy < 0)
-		{
-			vy += deceleration;
-			if(vy > 0)
-				vy = 0;
-		}
-		else
-		{
-			vy -= deceleration;
-			if(vy < 0)
-				vx = 0;
-		}
+		life -= delta;
+		x += vx*delta*60;
+		y += vy*delta*60;
+		
+		vy += gravity;
+	}
+	
+	public void enableGravity(float gravity)
+	{
+		this.gravity = gravity;
 	}
 	
 	public boolean dieCondition()
 	{
-		if(x < 0 || y < 0 || x > Gdx.graphics.getWidth() || y > Gdx.graphics.getHeight() || Math.abs(vx)+Math.abs(vy) <= deceleration)
+		if(life < 0)
 			return true;
 		return false;
 	}
 
 	public void render()
 	{
-		GSB.sr.setColor(c);
-		GSB.sr.rect(x, y, 2, 2);
+		if(texture == null)
+		{
+			GSB.sr.setColor(c);
+			GSB.sr.rect(x, y, 2, 2);
+		}
+		else
+		{
+			GSB.sb.draw(TextureManager.get(texture), x, y);
+		}
+	}
+
+	public void setTexture(String texture)
+	{
+		this.texture = texture;
 	}
 }

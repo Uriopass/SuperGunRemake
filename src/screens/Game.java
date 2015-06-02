@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import ui_buttons.ScrollClass;
 import weapons.BulletWeapon;
 import boxs.WorldBoxs;
+import game.IA;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -18,6 +19,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.math.Vector3;
 
 import data.ColorManager;
 import data.Coord;
@@ -36,17 +38,22 @@ public class Game implements Screen
 	Sprite background;
 	float originX, originY;
 	WorldBoxs boxs;
-	
+	public static boolean debug = false;
+	boolean IA = Options.IAActivated;
+	IA theDevil = new IA();
 	
 	public static void initCameraAndGSB()
 	{
 		camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		
 		GSB.init(camera);
 		Gdx.input.setInputProcessor(new ScrollClass());
 	}
 	public Game()
 	{
 		ColorManager.reset();
+		
+		camera.zoom = 2.5f;
 		
 		boxs = new WorldBoxs();
 		camera.zoom = 5f;
@@ -95,8 +102,8 @@ public class Game implements Screen
 
 		WorldBoxs.setMaxx(maxx);
 		WorldBoxs.setMinx(minx);
-		minx -= 20;
-		maxx += 20;
+		minx -= 40;
+		maxx += 40;
 		minx *= 256;
 		maxx *= 256;
 		BulletWeapon.setMinMaxX((int)minx, (int)maxx);
@@ -117,7 +124,6 @@ public class Game implements Screen
 			}
 		}
 		GSB.setUpdateShapeRenderer(false);
-		
 
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -127,9 +133,20 @@ public class Game implements Screen
 
 	float time = 0;
 	boolean matrix = false;
+	
+	float fps = 0;
+	int frames = 0;
 	@Override
 	public void render(float delta)
 	{
+		fps += delta;
+		frames++;
+		if(fps > 1)
+		{
+			fps = 0;
+			Gdx.graphics.setTitle("Supergun : "+frames);
+			frames = 0;
+		}
 		if(matrix)
 			delta /= 3;
 		time += delta;
@@ -151,11 +168,18 @@ public class Game implements Screen
 		
 		for(Personnage p : players)
 			p.renderUI();
-		
-		//players.get(0).renderCollision();
+		if(debug)
+		{
+			GSB.setUpdateShapeRenderer(true);
+			players.get(0).renderCollision();
+		}
+		else
+		{
+			GSB.setUpdateShapeRenderer(false);
+		}
 		update(delta);
 	}
-
+	
 	public void update(float delta)
 	{
 		if(Gdx.input.isButtonPressed(Input.Buttons.LEFT) && !Gdx.input.justTouched())
@@ -172,12 +196,14 @@ public class Game implements Screen
 		}
 
 		camera.zoom += ScrollClass.getScroll()/5f;
-		for(Personnage p : players)
-			p.update(delta);
 		
 		if(Gdx.input.isKeyJustPressed(Input.Keys.M))
 		{
 			matrix = !matrix;
+		}
+		if(Gdx.input.isKeyJustPressed(Input.Keys.F3))
+		{
+			debug = !debug;
 		}
 		if(Gdx.input.isKeyPressed(Input.Keys.S))
 		{
@@ -196,29 +222,39 @@ public class Game implements Screen
 			players.get(0).fire();
 		}
 		
-		
-		if(Gdx.input.isKeyPressed(Input.Keys.LEFT))
+		if(!IA)
 		{
-			players.get(1).move(false, delta);
+			
+			if(Gdx.input.isKeyPressed(Input.Keys.LEFT))
+			{
+				players.get(1).move(false, delta);
+			}
+			if(Gdx.input.isKeyPressed(Input.Keys.RIGHT))
+			{
+				players.get(1).move(true, delta);
+			}
+			if(Gdx.input.isKeyJustPressed(Input.Keys.UP))
+			{
+				players.get(1).jump();
+			}
+			if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_RIGHT) || Gdx.input.isKeyPressed(Input.Keys.ENTER))
+			{
+				players.get(1).fire();
+			}
 		}
-		if(Gdx.input.isKeyPressed(Input.Keys.RIGHT))
+		else
 		{
-			players.get(1).move(true, delta);
+			theDevil.update(players.get(1), players.get(0), delta);
 		}
-		if(Gdx.input.isKeyJustPressed(Input.Keys.UP))
-		{
-			players.get(1).jump();
-		}
-		if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_RIGHT) || Gdx.input.isKeyPressed(Input.Keys.ENTER))
-		{
-			players.get(1).fire();
-		}
-		players.get(0).testWeapon(players.get(1));
-		players.get(1).testWeapon(players.get(0));
+		players.get(0).testWeapon(players.get(1), delta);
+		players.get(1).testWeapon(players.get(0), delta);
 		
 		boxs.update(delta, players.get(0), players.get(1));
+
+		for(Personnage p : players)
+			p.update(delta);
 		
-		computeCamera();
+		computeCamera(delta);
 		
 		log.log();
 		
@@ -226,22 +262,26 @@ public class Game implements Screen
 		GSB.update(camera);
 	}
 	FPSLogger log = new FPSLogger();
-	private void computeCamera()
+	private void computeCamera(float delta)
 	{
 		float centerx = players.get(0).getX() + players.get(1).getX();
 		centerx /= 2;
 		float centery = players.get(0).getY() + players.get(1).getY();
 		centery /= 2;
 		
-		camera.position.x = centerx;
-		camera.position.y = centery;
+		float lerp = 0.05f;
+		Vector3 position = camera.position;
+		position.x += (centerx - position.x) * lerp * delta * 60;
+		position.y += (centery - position.y) * lerp * delta * 60;
 		
 		double distance = Math.sqrt(Math.pow(players.get(0).getX() - players.get(1).getX(), 2) + Math.pow(players.get(0).getY() - players.get(1).getY(), 2));
 			
 		camera.position.x = Math.round(camera.position.x*1000)/1000f;
 		camera.position.y = Math.round(camera.position.y*1000)/1000f;
 		
-		camera.zoom = 2.5f + (float)(distance/(Gdx.graphics.getWidth()));
+		lerp = 0.03f;
+		
+		camera.zoom += (2.5f + (float)(distance/(Gdx.graphics.getWidth())) - camera.zoom) * lerp * delta * 60;
 		
 		camera.zoom = Math.round(camera.zoom*1000)/1000f;
 		

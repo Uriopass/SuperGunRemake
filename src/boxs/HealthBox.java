@@ -9,7 +9,7 @@ import data.SpriteManager;
 
 public class HealthBox extends Box
 {
-	public final static float probability = .08f;
+	public final static float probability = .03f;
 	public HealthBox(Coord pos)
 	{
 		super(pos);

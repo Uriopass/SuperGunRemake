@@ -14,6 +14,7 @@ public class Bullet
 	int dmg;
 	float angle;
 	Sprite image;
+	String history;
 	
 	public Bullet(float x, float y, float vx, float vy, int dmg)
 	{
@@ -27,9 +28,18 @@ public class Bullet
 		angle = getAngle(vx, vy);
 	}
 	
+	public void inverteVx()
+	{
+		this.vx = -vx;
+		angle = getAngle(vx, vy);
+	}
+	
 	private float getAngle(float vx, float vy)
 	{
-		return (float) Math.toDegrees(Math.acos( (vx) / (Math.sqrt(vx*vx+vy*vy))));
+		float angle = (float) Math.toDegrees(Math.acos( vx /Math.sqrt(vx*vx+vy*vy)));
+		if(vy < 0)
+			angle = -angle;
+		return angle;
 	}
 	
 	public void update(float delta)
@@ -38,9 +48,20 @@ public class Bullet
 		y += vy*(delta*60);
 	}
 	
-	public Vector2 getCollision()
+	public Vector2[] getCollision(float delta)
 	{
-		return new Vector2(x, y);
+		Vector2[] collision = new Vector2[2];
+		
+		if(vx > 0)
+		{
+			collision[0] = new Vector2(x+image.getWidth(), y+image.getHeight()/2);
+		}
+		else
+		{
+			collision[0] = new Vector2(x, y+image.getHeight()/2);
+		}
+		collision[1] = new Vector2(collision[0].x + vx*delta*60, collision[0].y + vy*delta*60);
+		return collision;
 	}
 	
 	public void render()

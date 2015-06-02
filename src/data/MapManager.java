@@ -43,9 +43,21 @@ public class MapManager
 			}
 			FileInputStream fin = new FileInputStream(Gdx.files.internal(path+".spg").file());
 			ObjectInputStream ois = new ObjectInputStream(fin);
-			Map m =  (Map) ois.readObject();
-			ois.close();
-			return m;
+			try
+			{
+				Map m =  (Map) ois.readObject();
+				ois.close();
+				return m;
+			}
+			catch(Exception e)
+			{
+				System.out.println("[LOAD][MAP] Version map error detected !");
+				Gdx.files.internal(path+".spg").file().delete();
+				Gdx.files.internal(path+".spg").file().createNewFile();
+				save(getDefaultMap(), path);
+				ois.close();
+				return getDefaultMap();
+			}
 		}
 		catch(Exception e)
 		{

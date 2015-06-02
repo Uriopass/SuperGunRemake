@@ -2,7 +2,11 @@ package game;
 
 import java.util.ArrayList;
 
+import particles.ParticleEmitter;
+import screens.Game;
+import screens.Options;
 import weapons.BulletWeapon;
+import weapons.Pistol;
 import weapons.Weapon;
 import boxs.Box;
 
@@ -32,9 +36,12 @@ public class Personnage
 	boolean moving = true, jumping = false, doublejump = false;
 	int originX, originY;
 	
+	ParticleEmitter blood = new ParticleEmitter(0, 0, 8);
+	
 	float x, y;
 	
-	float vy, vx;
+	float vy;
+	private float vx;
 	
 	ArrayList<Polygon> collisions;
 	/**
@@ -42,8 +49,10 @@ public class Personnage
 	 */
 	boolean direction = false;
 	float time, count;
-	int speed = 13;
-	float acceleration = 3;
+	int speed = 23;
+	float acceleration = 1.2f;
+	float realAcceleration = acceleration;
+	float friction = .8f;
 	int jumpspeed = 32;
 	int doublejumpspeed = 30;
 	int dieY;
@@ -55,9 +64,8 @@ public class Personnage
 	
 	Rectangle hitbox = new Rectangle(x + 23, y + 3, 55, 105);
 	
-	public Weapon weapon;
+	Weapon weapon;
 	
-	public BulletWeapon pistol, sniper;
 	Personnage ennemy;
 	
 	public Personnage(int id, int dieY)
@@ -65,6 +73,11 @@ public class Personnage
 		this.dieY = dieY;
 		this.id = id;
 		collisions = new ArrayList<Polygon>();
+		
+		blood.setTexture("blood.png");
+		blood.setRate(8);
+		blood.enableGravity(-.2f);
+		blood.setLife(20);
 		
 		ui = new Sprite(SpriteManager.get("personnage_ui.png"));
 		if(id == 1)
@@ -90,27 +103,7 @@ public class Personnage
 		sprite = new Animation(0.10f, frames);
 		sprite.setPlayMode(PlayMode.LOOP);
 		
-		pistol = new BulletWeapon("pistol");
-		pistol.setOwner(this);
-		pistol.setPath("Armes/gun.png");
-		pistol.setRate(30);
-		pistol.setPadding(27, 8);
-		pistol.setMaxAmmo(30);
-		pistol.setVelocity(40);
-		pistol.setDamage(15);
-		
-		weapon = pistol;
-		
-		sniper = new BulletWeapon("sniper");
-		sniper.setOwner(this);
-		sniper.setPath("Armes/sniper.png");
-		sniper.setRate(60);
-		sniper.setPadding(27, 8);
-		sniper.setMaxAmmo(8);
-		sniper.setVelocity(80);
-		sniper.setDamage(38);
-		
-		
+		 setWeapon(new Pistol());
 	}
 	
 	public void setEnnemy(Personnage ennemy)
@@ -120,6 +113,7 @@ public class Personnage
 	
 	public void render()
 	{
+		blood.render();
 		if(jumping)
 		{
 			GSB.sb.draw(sprite.getKeyFrame(0.2f), x, y);
@@ -148,11 +142,17 @@ public class Personnage
 				GSB.sr.rect(ui.getX()+64, ui.getY()+93, life*1.5f, 10);
 				GSB.sr.setColor(1, ((float)0xd0)/0xFF, ((float)0x14)/0xFF, .7f);
 				// Ammo
-				GSB.sr.rect(ui.getX()+64, ui.getY()+73, ((float)weapon.getAmmo()/weapon.getMaxAmmo())*150f, 10);
+				if(Options.ammoActivated)
+				{
+					GSB.sr.rect(ui.getX()+64, ui.getY()+73, ((float)weapon.getAmmo()/weapon.getMaxAmmo())*150f, 10);
+				}
 			GSB.sr.end();
 			GSB.hud.begin();
 				FontManager.get(10).draw(GSB.hud, life+"/100", ui.getX()+120, ui.getY()+101);
-				FontManager.get(10).draw(GSB.hud, weapon.getAmmo()+"/"+weapon.getMaxAmmo(), ui.getX()+120, ui.getY()+81);
+				if(Options.ammoActivated)
+				{
+					FontManager.get(10).draw(GSB.hud, weapon.getAmmo()+"/"+weapon.getMaxAmmo(), ui.getX()+120, ui.getY()+81);
+				}
 				FontManager.get(12).draw(GSB.hud, "Arme : "+weapon.getName(), ui.getX()+80, ui.getY()+60);
 				FontManager.get(12).draw(GSB.hud, "Score", ui.getX()+10, ui.getY()+50);
 				FontManager.get(12).draw(GSB.hud, ""+score, ui.getX()+10, ui.getY()+30);
@@ -163,17 +163,23 @@ public class Personnage
 		{
 		
 			GSB.sr.begin(ShapeType.Filled);
-			GSB.sr.setColor(1, 0, 0, .7f);
-			// Life
-			GSB.sr.rect(ui.getX()+178, ui.getY()+93, -(life*1.5f), 10);
-			GSB.sr.setColor(1, ((float)0xd0)/0xFF, ((float)0x14)/0xFF, .7f);
-			// Ammo
-			GSB.sr.rect(ui.getX()+178, ui.getY()+73,-((float)weapon.getAmmo()/weapon.getMaxAmmo())*150f, 10);
-		GSB.sr.end();
+				GSB.sr.setColor(1, 0, 0, .7f);
+				// Life
+				GSB.sr.rect(ui.getX()+178, ui.getY()+93, -(life*1.5f), 10);
+				GSB.sr.setColor(1, ((float)0xd0)/0xFF, ((float)0x14)/0xFF, .7f);
+				// Ammo
+				if(Options.ammoActivated)
+				{
+					GSB.sr.rect(ui.getX()+178, ui.getY()+73,-((float)weapon.getAmmo()/weapon.getMaxAmmo())*150f, 10);
+				}
+			GSB.sr.end();
 
 			GSB.hud.begin();
 				FontManager.get(10).draw(GSB.hud, life+"/100", ui.getX()+85, ui.getY()+101);
-				FontManager.get(10).draw(GSB.hud, weapon.getAmmo()+"/"+weapon.getMaxAmmo(), ui.getX()+85, ui.getY()+81);
+				if(Options.ammoActivated)
+				{
+					FontManager.get(10).draw(GSB.hud, weapon.getAmmo()+"/"+weapon.getMaxAmmo(), ui.getX()+85, ui.getY()+81);
+				}
 				FontManager.get(12).draw(GSB.hud, "Arme : "+weapon.getName(), ui.getX()+64, ui.getY()+60);
 				FontManager.get(12).draw(GSB.hud, "Score", ui.getX()+190, ui.getY()+50);
 				FontManager.get(12).draw(GSB.hud, ""+score, ui.getX()+200, ui.getY()+30);
@@ -182,6 +188,19 @@ public class Personnage
 		}
 	}
 
+	public void setWeapon(Weapon newweapon)
+	{
+		newweapon.setOwner(this);
+		if(newweapon instanceof BulletWeapon)
+		{
+			if(weapon instanceof BulletWeapon)
+			{
+				((BulletWeapon) newweapon).transfer((BulletWeapon) weapon);
+			}
+		}
+		this.weapon = newweapon;
+	}
+	
 	public boolean isDead()
 	{
 		return y < dieY || life <= 0;
@@ -221,38 +240,49 @@ public class Personnage
 			}
 		}
 	}
+	int bugCorector = 5;
 	public void update(float delta)
 	{
-		moving = false;
+		if(bugCorector-- > 0)
+		{
+			delta = 1/60f;
+		}
+		blood.update(delta*2);
 		time += delta;
 		
 		x += vx*delta*60;
 		if(collision())
 		{
 			x -= vx*delta*60;
-			vx = 0;
+			if(onGround())
+				vx = -vx/2;
+			else
+				vx = 0;
 			moving = false;
 		}
 		
-		if(vx != 0)
+		if(moving && onGround())
 		{
-			moving = true;
-			
-			vx += ((vx < 0)?1:-1)*delta*60;
-			if(Math.abs(vx) < delta*60*2)
+			vx = vx + ((vx < 0)?friction:-friction)*delta*60;
+			if(Math.abs(vx) < delta*60*friction)
 			{
 				vx = 0;
 			}
 		}
+		if(onGround())
+		{
+			realAcceleration = acceleration*2;
+		}
 		else
 		{
-			moving = false;
+			realAcceleration = acceleration;
 		}
+		moving = (vx != 0);
 		count += delta;
-		if(count > 1)
+		if(count > 5)
 		{
 			life++;
-			count --;
+			count -=5;
 		}
 		if(life > 100)
 			life = 100;
@@ -296,10 +326,13 @@ public class Personnage
 			respawn();
 		}
 		
+		blood.setX((int)(hitbox.x+hitbox.width/2));
+		blood.setY((int)(hitbox.y+hitbox.height/2));
+	
 		weapon.update(delta);
 	}
 
-	private boolean onGround()
+	public boolean onGround()
 	{
 		hitbox.setPosition(x + 20, y-2);
 		for(int i = 0 ; i < collisions.size() ; i++)
@@ -325,16 +358,16 @@ public class Personnage
 			vertices[3] = c.getY() * 256;
 
 			vertices[4] = c.getX() * 256 + 256;
-			vertices[5] = c.getY() * 256 + 210;
+			vertices[5] = c.getY() * 256 + 234;
 
 			vertices[6] = c.getX() * 256;
-			vertices[7] = c.getY() * 256 + 210;
+			vertices[7] = c.getY() * 256 + 234;
 		}
 		if(type == Map.RIGHT)
 		{
 			vertices = new float[5 * 2];
 			vertices[0] = c.getX() * 256 + 10;
-			vertices[1] = c.getY() * 256 + 210;
+			vertices[1] = c.getY() * 256 + 234;
 
 			vertices[2] = c.getX() * 256 + 10;
 			vertices[3] = c.getY() * 256 + 180;
@@ -346,7 +379,7 @@ public class Personnage
 			vertices[7] = c.getY() * 256;
 
 			vertices[8] = c.getX() * 256 + 256;
-			vertices[9] = c.getY() * 256 + 210;
+			vertices[9] = c.getY() * 256 + 234;
 		}
 		if(type == Map.LEFT)
 		{
@@ -361,10 +394,10 @@ public class Personnage
 			vertices[5] = c.getY() * 256 + 180;
 
 			vertices[6] = c.getX() * 256 + 240;
-			vertices[7] = c.getY() * 256 + 210;
+			vertices[7] = c.getY() * 256 + 234;
 
 			vertices[8] = c.getX() * 256;
-			vertices[9] = c.getY() * 256 + 210;
+			vertices[9] = c.getY() * 256 + 234;
 		}
 		collisions.add(new Polygon(vertices));
 		
@@ -372,6 +405,11 @@ public class Personnage
 		{
 			y += physicsPrecision;
 		}
+	}
+	
+	public int getLife()
+	{
+		return life;
 	}
 	
 	public boolean isCollision(Polygon p, Rectangle r)
@@ -397,9 +435,9 @@ public class Personnage
 		return false;
 	}
 
-	public void testWeapon(Personnage enemy)
+	public void testWeapon(Personnage enemy, float delta)
 	{
-		enemy.getWeapon().testHit(this);
+		enemy.getWeapon().testHit(this, delta);
 	}
 	
 	public Weapon getWeapon()
@@ -410,6 +448,28 @@ public class Personnage
 	public Rectangle getHitbox()
 	{
 		return hitbox;
+	}
+	
+	public Rectangle getVxHitbox()
+	{
+		Rectangle todo = new Rectangle(hitbox);
+		if(vx < 0)
+			todo.x -= vx;
+		todo.width += Math.abs(vx);
+		return todo;
+	}
+	
+	public Polygon getPolygonHitbox()
+	{
+		Rectangle old = new Rectangle(hitbox);
+		if(vx < 0)
+			hitbox.x -= vx;
+		hitbox.width += Math.abs(vx);
+		Polygon p = new Polygon(new float[] { 0, 0, hitbox.width, 0, hitbox.width, hitbox.height, 0, hitbox.height });
+		
+		p.setPosition(hitbox.x, hitbox.y);
+		hitbox = old;
+		return p;
 	}
 	
 	/**
@@ -428,19 +488,14 @@ public class Personnage
 			}
 		}
 		this.direction = direction;
-		if(direction)
+		if(direction && vx < speed)
 		{
-			vx += acceleration*delta*60;
+			vx += realAcceleration*delta*60;
 		}
-		else
+		if(!direction && vx > -speed)
 		{
-			vx += -acceleration*delta*60;
+			vx -= realAcceleration*delta*60;
 		}
-		if(Math.abs(vx) > speed)
-		{
-			vx = ((vx > 0)?1:-1)*speed;
-		}
-		
 	}
 
 	public void fire()
@@ -473,7 +528,7 @@ public class Personnage
 
 	public void jump()
 	{
-		if(doublejump)
+		if(doublejump || Game.debug)
 		{
 			doublejump = false;
 			vy = doublejumpspeed;
@@ -507,9 +562,8 @@ public class Personnage
 		jumping = false;
 		moving = false;
 		vy = 0;
-		weapon.reset();
-		weapon = pistol;
-		weapon.reset();
+		vx = 0;
+		setWeapon(new Pistol());
 		
 		while(collision())
 		{
@@ -524,6 +578,10 @@ public class Personnage
 
 	public void addLife(int i)
 	{
+		if(i < 0)
+		{
+			blood.startEmitting(0.1f);
+		}
 		this.life += i;
 		if(life > 100)
 			life = 100;
@@ -532,6 +590,16 @@ public class Personnage
 	public ArrayList<Polygon> getCollisions()
 	{
 		return collisions;
+	}
+
+	public float getVx()
+	{
+		return vx;
+	}
+
+	public void setVx(float vx)
+	{
+		this.vx = vx;
 	}
 
 }

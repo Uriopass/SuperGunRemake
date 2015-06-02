@@ -9,7 +9,7 @@ import data.SpriteManager;
 
 public class AmmunitionBox extends Box
 {
-	public final static float probability = .1f;
+	public final static float probability = .03f;
 	public AmmunitionBox(Coord pos)
 	{
 		super(pos);
@@ -22,6 +22,6 @@ public class AmmunitionBox extends Box
 	@Override
 	public void action(Personnage personnage)
 	{
-		personnage.getWeapon().reset();
+		personnage.getWeapon().setMaxAmmo(personnage.getWeapon().getMaxAmmo());
 	}
 }

@@ -16,9 +16,9 @@ public class Weapon
 	int ammo, maxammo;
 	Personnage owner;
 	
-	public Weapon(String name)
+	public Weapon()
 	{
-		this.name = name;
+		
 	}
 	
 	public void setPath(String path)
@@ -32,6 +32,11 @@ public class Weapon
 		paddingy = y;
 	}
 
+	public void setName(String name)
+	{
+		this.name = name;
+	}
+	
 	public void setMaxAmmo(int maxAmmo)
 	{
 		this.maxammo = maxAmmo;
@@ -81,7 +86,7 @@ public class Weapon
 		
 	}
 
-	public void testHit(Personnage pers)
+	public void testHit(Personnage pers, float delta)
 	{
 		
 	}

@@ -1,6 +1,6 @@
 package boxs;
 
-import weapons.Sniper;
+import weapons.Shotgun;
 import game.Personnage;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -9,11 +9,11 @@ import data.Coord;
 import data.GSB;
 import data.SpriteManager;
 
-public class SniperBox extends Box
+public class ShotgunBox extends Box
 {
 	public final static float probability = .05f;
-	Sprite sniperpic;
-	public SniperBox(Coord pos)
+	Sprite shotgunpic;
+	public ShotgunBox(Coord pos)
 	{
 		super(pos);
 	}
@@ -22,20 +22,20 @@ public class SniperBox extends Box
 	protected void setImage()
 	{
 		image = new Sprite(SpriteManager.get("emptybox.png"));
-		sniperpic = new Sprite(SpriteManager.get("Armes/sniper.png"));
+		shotgunpic = new Sprite(SpriteManager.get("Armes/shotgun.png"));
 	}
-	
+	 
 	@Override
 	public void render()
 	{
 		super.render();
-		sniperpic.setCenter(image.getX()+image.getWidth()/2, image.getY()+image.getHeight()/2);
-		sniperpic.draw(GSB.sb);
+		shotgunpic.setCenter(image.getX()+image.getWidth()/2, image.getY()+image.getHeight()/2);
+		shotgunpic.draw(GSB.sb);
 	}
 	
 	@Override
 	public void action(Personnage personnage)
 	{
-		personnage.setWeapon(new Sniper());
+		personnage.setWeapon(new Shotgun());
 	}
 }
