@@ -1,15 +1,16 @@
 package screens;
 
-import game.Map;
+import game.AI;
 import game.Personnage;
 
 import java.awt.Point;
 import java.util.ArrayList;
 
+import map.Block;
+import map.Map;
 import ui_buttons.ScrollClass;
 import weapons.BulletWeapon;
 import boxs.WorldBoxs;
-import game.IA;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -22,7 +23,6 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Vector3;
 
 import data.ColorManager;
-import data.Coord;
 import data.GSB;
 import data.MapManager;
 import data.SpriteManager;
@@ -40,7 +40,7 @@ public class Game implements Screen
 	WorldBoxs boxs;
 	public static boolean debug = false;
 	boolean IA = Options.IAActivated;
-	IA theDevil = new IA();
+	AI theDevil;
 	
 	public static void initCameraAndGSB()
 	{
@@ -62,12 +62,16 @@ public class Game implements Screen
 		
 		float centerx = background.getWidth()/2;
 		float centery = background.getHeight()/2;
+		camera.position.x = centerx;
+		camera.position.y = centery;
 		originX = Gdx.graphics.getWidth()/2 - centerx;
 		originY = Gdx.graphics.getHeight()/2 - centery;
 		background.setPosition(originX, originY);
 		
 		m =  MapManager.load("editor");
 		m.computeTypes();
+		
+		theDevil = new AI(m);
 		
 		boxs.setMap(m);
 		/*
@@ -84,7 +88,7 @@ public class Game implements Screen
 		
 		float minY = 1000000000, maxy = -10000000;
 		float minx = 1000000000, maxx = -10000000;
-		for(Coord c : m.getCoords())
+		for(Block c : m.getBlocks())
 		{
 			if(c.getY() < minY)
 				minY = c.getY();
@@ -116,14 +120,13 @@ public class Game implements Screen
 		players.get(1).setOrigin(m.getMechantPos());
 		players.get(0).setEnnemy(players.get(1));
 		players.get(1).setEnnemy(players.get(0));
-		for(Coord c : m.getCoords())
+		for(Block c : m.getBlocks())
 		{
 			for(Personnage p : players)
 			{
 				p.addCollision(c);
 			}
 		}
-		GSB.setUpdateShapeRenderer(false);
 
 		Gdx.gl.glEnable(GL20.GL_BLEND);
 		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -151,16 +154,17 @@ public class Game implements Screen
 			delta /= 3;
 		time += delta;
 		Gdx.gl.glClearColor(1, 1, 1, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT | (Gdx.graphics.getBufferFormat().coverageSampling?GL20.GL_COVERAGE_BUFFER_BIT_NV:0));
 
 		background.setPosition(originX-camera.position.x/40, originY-camera.position.y/40);
 		
 		GSB.hud.begin();
 			background.draw(GSB.hud);
 		GSB.hud.end();
+
+		m.render(delta);
 		
 		GSB.sb.begin();
-			m.render();
 			boxs.render();
 			for(Personnage p : players)
 				p.render();
@@ -170,13 +174,9 @@ public class Game implements Screen
 			p.renderUI();
 		if(debug)
 		{
-			GSB.setUpdateShapeRenderer(true);
 			players.get(0).renderCollision();
 		}
-		else
-		{
-			GSB.setUpdateShapeRenderer(false);
-		}
+		
 		update(delta);
 	}
 	
@@ -281,7 +281,7 @@ public class Game implements Screen
 		
 		lerp = 0.03f;
 		
-		camera.zoom += (2.5f + (float)(distance/(Gdx.graphics.getWidth())) - camera.zoom) * lerp * delta * 60;
+		camera.zoom += (2.5f + ((Options.ParkourActivated)?3:0) + (float)(distance/(Gdx.graphics.getWidth())) - camera.zoom) * lerp * delta * 60;
 		
 		camera.zoom = Math.round(camera.zoom*1000)/1000f;
 		

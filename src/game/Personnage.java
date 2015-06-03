@@ -2,6 +2,8 @@ package game;
 
 import java.util.ArrayList;
 
+import map.Block;
+import map.Map;
 import particles.ParticleEmitter;
 import screens.Game;
 import screens.Options;
@@ -62,17 +64,21 @@ public class Personnage
 	float physicsPrecision = 1;
 	float gravity = .8f;
 	
+	ArrayList<Block> map;
+	
 	Rectangle hitbox = new Rectangle(x + 23, y + 3, 55, 105);
 	
 	Weapon weapon;
 	
-	Personnage ennemy;
+	Personnage enemy;
 	
 	public Personnage(int id, int dieY)
 	{
 		this.dieY = dieY;
 		this.id = id;
 		collisions = new ArrayList<Polygon>();
+		
+		map = new ArrayList<Block>();
 		
 		blood.setTexture("blood.png");
 		blood.setRate(8);
@@ -108,7 +114,7 @@ public class Personnage
 	
 	public void setEnnemy(Personnage ennemy)
 	{
-		this.ennemy = ennemy;
+		this.enemy = ennemy;
 	}
 	
 	public void render()
@@ -136,17 +142,17 @@ public class Personnage
 		GSB.hud.end();
 		if(id == 0)
 		{
-			GSB.sr.begin(ShapeType.Filled);
-				GSB.sr.setColor(1, 0, 0, .7f);
+			GSB.srHud.begin(ShapeType.Filled);
+				GSB.srHud.setColor(1, 0, 0, .7f);
 				// Life
-				GSB.sr.rect(ui.getX()+64, ui.getY()+93, life*1.5f, 10);
-				GSB.sr.setColor(1, ((float)0xd0)/0xFF, ((float)0x14)/0xFF, .7f);
+				GSB.srHud.rect(ui.getX()+64, ui.getY()+93, life*1.5f, 10);
+				GSB.srHud.setColor(1, ((float)0xd0)/0xFF, ((float)0x14)/0xFF, .7f);
 				// Ammo
 				if(Options.ammoActivated)
 				{
-					GSB.sr.rect(ui.getX()+64, ui.getY()+73, ((float)weapon.getAmmo()/weapon.getMaxAmmo())*150f, 10);
+					GSB.srHud.rect(ui.getX()+64, ui.getY()+73, ((float)weapon.getAmmo()/weapon.getMaxAmmo())*150f, 10);
 				}
-			GSB.sr.end();
+			GSB.srHud.end();
 			GSB.hud.begin();
 				FontManager.get(10).draw(GSB.hud, life+"/100", ui.getX()+120, ui.getY()+101);
 				if(Options.ammoActivated)
@@ -162,17 +168,17 @@ public class Personnage
 		else
 		{
 		
-			GSB.sr.begin(ShapeType.Filled);
-				GSB.sr.setColor(1, 0, 0, .7f);
+			GSB.srHud.begin(ShapeType.Filled);
+				GSB.srHud.setColor(1, 0, 0, .7f);
 				// Life
-				GSB.sr.rect(ui.getX()+178, ui.getY()+93, -(life*1.5f), 10);
-				GSB.sr.setColor(1, ((float)0xd0)/0xFF, ((float)0x14)/0xFF, .7f);
+				GSB.srHud.rect(ui.getX()+178, ui.getY()+93, -(life*1.5f), 10);
+				GSB.srHud.setColor(1, ((float)0xd0)/0xFF, ((float)0x14)/0xFF, .7f);
 				// Ammo
 				if(Options.ammoActivated)
 				{
-					GSB.sr.rect(ui.getX()+178, ui.getY()+73,-((float)weapon.getAmmo()/weapon.getMaxAmmo())*150f, 10);
+					GSB.srHud.rect(ui.getX()+178, ui.getY()+73,-((float)weapon.getAmmo()/weapon.getMaxAmmo())*150f, 10);
 				}
-			GSB.sr.end();
+			GSB.srHud.end();
 
 			GSB.hud.begin();
 				FontManager.get(10).draw(GSB.hud, life+"/100", ui.getX()+85, ui.getY()+101);
@@ -253,6 +259,11 @@ public class Personnage
 		x += vx*delta*60;
 		if(collision())
 		{
+			if(collided.getType() == 1)
+			{
+				collided = null;
+				respawn();
+			}
 			x -= vx*delta*60;
 			if(onGround())
 				vx = -vx/2;
@@ -287,6 +298,14 @@ public class Personnage
 		if(life > 100)
 			life = 100;
 
+		if(collided != null)
+		{
+			if(collided.getType() == 1)
+			{
+				collided = null;
+				respawn();
+			}
+		}
 		if(!onGround() || jumping)
 		{
 			vy -= gravity*(delta*60);
@@ -305,9 +324,9 @@ public class Personnage
 					jumping = false;
 					doublejump = false;
 					float max = -1000000;
-					for(int i = 1 ; i < collidedWith.getTransformedVertices().length ; i += 2)
-						if(collidedWith.getTransformedVertices()[i] > max)
-							max = collidedWith.getTransformedVertices()[i];
+					for(int i = 1 ; i < collidedPoly.getTransformedVertices().length ; i += 2)
+						if(collidedPoly.getTransformedVertices()[i] > max)
+							max = collidedPoly.getTransformedVertices()[i];
 					y = max-2.3f;
 				}
 				vy = 0;
@@ -322,7 +341,6 @@ public class Personnage
 		}
 		if(isDead())
 		{
-			ennemy.score++;
 			respawn();
 		}
 		
@@ -338,69 +356,71 @@ public class Personnage
 		for(int i = 0 ; i < collisions.size() ; i++)
 			if(isCollision(collisions.get(i), hitbox))
 			{
-				collidedWith = collisions.get(i);
+				collidedPoly = collisions.get(i);
+				collided = map.get(i);
 				return true;
 			}
 		return false;
 	}
 	
-	public void addCollision(Coord c)
+	public void addCollision(Block c)
 	{
-		int type = c.getData();
+		int type = c.getFlag();
 		float[] vertices = null;
 		if(type == Map.GROUND)
 		{
 			vertices = new float[4 * 2];
-			vertices[0] = c.getX() * 256;
-			vertices[1] = c.getY() * 256;
+			vertices[0] = 0;
+			vertices[1] = 0;
 
-			vertices[2] = c.getX() * 256 + 256;
-			vertices[3] = c.getY() * 256;
+			vertices[2] = 256;
+			vertices[3] = 0;
 
-			vertices[4] = c.getX() * 256 + 256;
-			vertices[5] = c.getY() * 256 + 234;
+			vertices[4] = 256;
+			vertices[5] = 234;
 
-			vertices[6] = c.getX() * 256;
-			vertices[7] = c.getY() * 256 + 234;
+			vertices[6] = 0;
+			vertices[7] = 234;
 		}
 		if(type == Map.RIGHT)
 		{
 			vertices = new float[5 * 2];
-			vertices[0] = c.getX() * 256 + 10;
-			vertices[1] = c.getY() * 256 + 234;
+			vertices[0] = 10;
+			vertices[1] = 234;
 
-			vertices[2] = c.getX() * 256 + 10;
-			vertices[3] = c.getY() * 256 + 180;
+			vertices[2] = 10;
+			vertices[3] = 180;
 
-			vertices[4] = c.getX() * 256 + 190;
-			vertices[5] = c.getY() * 256;
+			vertices[4] = 190;
+			vertices[5] = 0;
 
-			vertices[6] = c.getX() * 256 + 256;
-			vertices[7] = c.getY() * 256;
+			vertices[6] = 256;
+			vertices[7] = 0;
 
-			vertices[8] = c.getX() * 256 + 256;
-			vertices[9] = c.getY() * 256 + 234;
+			vertices[8] = 256;
+			vertices[9] = 234;
 		}
 		if(type == Map.LEFT)
 		{
 			vertices = new float[5 * 2];
-			vertices[0] = c.getX() * 256;
-			vertices[1] = c.getY() * 256;
+			vertices[0] = 0;
+			vertices[1] = 0;
 
-			vertices[2] = c.getX() * 256 + 70;
-			vertices[3] = c.getY() * 256;
+			vertices[2] = 70;
+			vertices[3] = 0;
 
-			vertices[4] = c.getX() * 256 + 240;
-			vertices[5] = c.getY() * 256 + 180;
+			vertices[4] = 240;
+			vertices[5] = 180;
 
-			vertices[6] = c.getX() * 256 + 240;
-			vertices[7] = c.getY() * 256 + 234;
+			vertices[6] = 240;
+			vertices[7] = 234;
 
-			vertices[8] = c.getX() * 256;
-			vertices[9] = c.getY() * 256 + 234;
+			vertices[8] = 0;
+			vertices[9] = 234;
 		}
 		collisions.add(new Polygon(vertices));
-		
+		map.add(c);
+		collisions.get(collisions.size()-1).setPosition(c.getX()*256, c.getY()*256);
 		while(collision())
 		{
 			y += physicsPrecision;
@@ -421,15 +441,17 @@ public class Personnage
 		return false;
 	}
 
-	Polygon collidedWith;
-
+	Polygon collidedPoly;
+	Block collided;
+	
 	public boolean collision()
 	{
 		hitbox.setPosition(x + 20, y + 3);
 		for(int i = 0 ; i < collisions.size() ; i++)
 			if(isCollision(collisions.get(i), hitbox))
 			{
-				collidedWith = collisions.get(i);
+				collidedPoly = collisions.get(i);
+				collided = map.get(i);
 				return true;
 			}
 		return false;
@@ -512,18 +534,18 @@ public class Personnage
 	
 	public void renderCollision()
 	{
-		GSB.sr.begin(ShapeType.Line);
-		GSB.sr.setColor(Color.RED);
+		GSB.srCam.begin(ShapeType.Line);
+		GSB.srCam.setColor(Color.RED);
 		for(Polygon p : collisions)
 		{
 			float[] vertices = p.getVertices();
 			for(int i = 0 ; i < vertices.length ; i += 2)
 			{
-				GSB.sr.line(vertices[i], vertices[i + 1], vertices[(i + 2) % vertices.length], vertices[(i + 3) % vertices.length]);
+				GSB.srCam.line(p.getX()+vertices[i], p.getY()+vertices[i + 1], p.getX()+vertices[(i + 2) % vertices.length], p.getY()+vertices[(i + 3) % vertices.length]);
 			}
 		}
-		GSB.sr.rect(hitbox.getX(), hitbox.getY(), hitbox.getWidth(), hitbox.getHeight());
-		GSB.sr.end();
+		GSB.srCam.rect(hitbox.getX(), hitbox.getY(), hitbox.getWidth(), hitbox.getHeight());
+		GSB.srCam.end();
 	}
 
 	public void jump()
@@ -558,12 +580,20 @@ public class Personnage
 		this.x = originX;
 		this.y = originY;
 		
+		enemy.score++;
+		
 		life = 100;
 		jumping = false;
 		moving = false;
 		vy = 0;
 		vx = 0;
 		setWeapon(new Pistol());
+		
+		blood.setRate(100);
+		blood.startEmitting();
+		blood.update(1/60f);
+		blood.stopEmitting();
+		blood.setRate(8);
 		
 		while(collision())
 		{

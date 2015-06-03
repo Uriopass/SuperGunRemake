@@ -61,8 +61,8 @@ public class Particle
 	{
 		if(texture == null)
 		{
-			GSB.sr.setColor(c);
-			GSB.sr.rect(x, y, 2, 2);
+			GSB.srCam.setColor(c);
+			GSB.srCam.rect(x, y, 2, 2);
 		}
 		else
 		{

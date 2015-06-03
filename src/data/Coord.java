@@ -20,6 +20,17 @@ public class Coord implements Serializable
 		this.y = coord.y;
 		this.additionalData = coord.additionalData;
 	}
+	
+	public void add(float x, float y)
+	{
+		this.x += x;
+		this.y += y;
+	}
+	
+	public void add(Coord c)
+	{
+		add(c.getX(), c.getY());
+	}
 
 	public float getX()
 	{

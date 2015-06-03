@@ -27,7 +27,7 @@ public class TodoList
 	 * --> [DONE] Normal
 	 * --> [DONE] Brawl
 	 * --> Parkour
-	 * -- --> Parkour generator
+	 * -- --> [DONE] Parkour generator
 	 * - [DONE] AI.
 	 * - online multiplayer
 	 * Bugs : 

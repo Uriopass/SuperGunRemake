@@ -14,8 +14,9 @@ public class Options implements Screen
 {
 	public static boolean ammoActivated = false;
 	public static boolean brawlModeActivated = true;
-	public static boolean IAActivated = true;
-	BigButton ammo, brawl, IA, exit;
+	public static boolean IAActivated = false;
+	public static boolean ParkourActivated = true;
+	BigButton ammo, brawl, IA, parkour, exit;
 	
 	public Options()
 	{
@@ -52,6 +53,20 @@ public class Options implements Screen
 		};
 		IA.setLocation(brawl.getX(), brawl.getY()-brawl.getHeight());
 		
+		parkour = new BigButton(ParkourActivated?"Disable Parkour":"Enable Parkour")
+		{
+			@Override
+			protected void onClick()
+			{
+				ParkourActivated = !ParkourActivated;
+				if(ParkourActivated)
+					IAActivated = false;
+				
+				this.setName(ParkourActivated?"Disable Parkour":"Enable Parkour");
+			}
+		};
+		parkour.setLocation(IA.getX(), IA.getY()-IA.getHeight());
+		
 		exit = new BigButton("Back to main menu")
 		{
 			@Override
@@ -60,7 +75,7 @@ public class Options implements Screen
 				((com.badlogic.gdx.Game)Gdx.app.getApplicationListener()).setScreen(new MainMenu());
 			}
 		};
-		exit.setLocation(IA.getX(), IA.getY()-IA.getHeight()*2);
+		exit.setLocation(parkour.getX(), parkour.getY()-parkour.getHeight()*2);
 		
 		
 	}
@@ -77,6 +92,7 @@ public class Options implements Screen
 			brawl.render(0);
 			exit.render(0);
 			IA.render(0);
+			parkour.render(0);
 		GSB.hud.end();
 		
 		update(delta);
@@ -88,6 +104,7 @@ public class Options implements Screen
 		brawl.update();
 		IA.update();
 		exit.update();
+		parkour.update();
 	}
 	@Override
 	public void show()

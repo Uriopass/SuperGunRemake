@@ -125,12 +125,12 @@ public class ParticleEmitter
 	
 	public void render()
 	{
-		GSB.sr.begin(ShapeType.Filled);
+		GSB.srCam.begin(ShapeType.Filled);
 		for(Particle p : particles)
 		{
 			p.render();
 		}
-		GSB.sr.end();
+		GSB.srCam.end();
 	}
 
 	public int getParticleCount()

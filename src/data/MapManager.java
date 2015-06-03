@@ -1,11 +1,12 @@
 package data;
 
-import game.Map;
-
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+
+import map.Map;
 
 import com.badlogic.gdx.Gdx;
 
@@ -93,6 +94,45 @@ public class MapManager
 		m.addBox(new Coord(-4, 3));
 		m.addBox(new Coord(7, 4));
 		m.addBox(new Coord(7, 3));
+		m.setPlayersPosition(new Coord(200, 300), new Coord(500, 300));
+		return m;
+	}
+
+	public static Map generateParkour()
+	{
+		Map m = new Map();
+		
+		m.addBox(new Coord(0, 1));
+		m.addBox(new Coord(1, 1));
+		m.addBox(new Coord(2, 1));
+		
+		/*
+		 * This is the moves list, it means the possible jumps
+		 */
+		ArrayList<Coord> moves = new ArrayList<Coord>();
+
+		moves.add(new Coord(8,-1));
+		moves.add(new Coord(5,2));
+		moves.add(new Coord(7,-1));
+		moves.add(new Coord(7,1));
+		moves.add(new Coord(6,2));
+		moves.add(new Coord(9,-2));
+		moves.add(new Coord(10,-3));
+		moves.add(new Coord(5,4));
+		moves.add(new Coord(7,3));
+		
+		int mapSize = 30;
+		
+		Coord current = new Coord(2, 1);
+		
+		for(int i = 0 ; i < mapSize ; i++)
+		{
+			current.add(moves.get((int)(Math.random()*moves.size())));
+			m.addBox(new Coord(current));
+			current.x += 1;
+			m.addBox(new Coord(current));
+		}
+		
 		m.setPlayersPosition(new Coord(200, 300), new Coord(500, 300));
 		return m;
 	}

@@ -1,10 +1,10 @@
 package boxs;
 
-import game.Map;
 import game.Personnage;
 
 import java.util.ArrayList;
 
+import map.Map;
 import screens.Options;
 
 import com.badlogic.gdx.math.Polygon;
