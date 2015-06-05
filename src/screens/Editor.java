@@ -149,7 +149,7 @@ public class Editor implements Screen
 			{
 				parkour.render(0);
 			}
-			FontManager.get(15).draw(GSB.hud, "Current block [1-9] : "+type, 10, Gdx.graphics.getHeight()-10);
+			FontManager.get(15).draw(GSB.hud, "Current block [1-9] : "+(type+1), 10, Gdx.graphics.getHeight()-10);
 		GSB.hud.end();
 		
 		update(delta, gridx, gridy, x, y);
@@ -165,6 +165,7 @@ public class Editor implements Screen
 	
 	boolean deletemode = false;
 	
+	@SuppressWarnings("unused")
 	private boolean alreadyBlocked(int x, int y, int type)
 	{
 		for(Block c : map.getBlocks())

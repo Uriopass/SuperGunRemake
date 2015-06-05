@@ -15,7 +15,7 @@ public class Options implements Screen
 	public static boolean ammoActivated = false;
 	public static boolean brawlModeActivated = true;
 	public static boolean IAActivated = false;
-	public static boolean ParkourActivated = true;
+	public static boolean ParkourActivated = false;
 	BigButton ammo, brawl, IA, parkour, exit;
 	
 	public Options()

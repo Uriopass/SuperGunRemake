@@ -622,6 +622,7 @@ public class Personnage
 		return collisions;
 	}
 
+	
 	public float getVx()
 	{
 		return vx;
