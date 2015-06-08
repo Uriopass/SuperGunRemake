@@ -8,18 +8,23 @@ import java.util.ArrayList;
 
 import map.Block;
 import map.Map;
+import ui_buttons.BigButton;
 import ui_buttons.ScrollClass;
 import weapons.BulletWeapon;
+import weapons.Shotgun;
+import weapons.Sniper;
 import boxs.WorldBoxs;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector3;
 
 import data.ColorManager;
@@ -42,6 +47,10 @@ public class Game implements Screen
 	boolean IA = Options.IAActivated;
 	AI theDevil;
 	
+	BigButton resume, exit;
+	
+	boolean paused = false;
+	
 	public static void initCameraAndGSB()
 	{
 		camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -49,7 +58,7 @@ public class Game implements Screen
 		GSB.init(camera);
 		Gdx.input.setInputProcessor(new ScrollClass());
 	}
-	public Game()
+	public Game(String mapName)
 	{
 		ColorManager.reset();
 		
@@ -68,7 +77,7 @@ public class Game implements Screen
 		originY = Gdx.graphics.getHeight()/2 - centery;
 		background.setPosition(originX, originY);
 		
-		m =  MapManager.load("editor");
+		m =  MapManager.load(mapName);
 		m.computeTypes();
 		
 		theDevil = new AI(m);
@@ -120,6 +129,10 @@ public class Game implements Screen
 		players.get(1).setOrigin(m.getMechantPos());
 		players.get(0).setEnnemy(players.get(1));
 		players.get(1).setEnnemy(players.get(0));
+		
+		players.get(0).setWeapon(new Shotgun());
+		players.get(1).setWeapon(new Sniper());
+		
 		for(Block c : m.getBlocks())
 		{
 			for(Personnage p : players)
@@ -127,15 +140,58 @@ public class Game implements Screen
 				p.addCollision(c);
 			}
 		}
-
-		Gdx.gl.glEnable(GL20.GL_BLEND);
-		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		
+		resume = new BigButton("Resume")
+		{
+			@Override
+			protected void onClick()
+			{
+				paused = false;
+			}
+		};
+		
+		resume.setLocation(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2);
+		resume.center(true, false);
+		
+		exit = new BigButton("Exit")
+		{
+			protected void onClick() 
+			{
+				Game.camera.zoom = 1;
+				GSB.update(Game.camera);
+				((com.badlogic.gdx.Game)Gdx.app.getApplicationListener()).setScreen(new MainMenu());
+			};
+		};
+		
+		exit.setLocation(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2 - resume.getHeight());
+		exit.center(true, false);
+		
+		try
+		{
+			FileHandle folder = Gdx.files.internal(".");
+			for(FileHandle fh : folder.list())
+			{
+				if(fh.extension().equals("spg"))
+				{
+					System.out.println("[LOAD][MAP] loaded : "+fh.nameWithoutExtension());
+					//maps.add(fh.nameWithoutExtension());
+				}
+			}
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		 Gdx.gl.glEnable(GL20.GL_BLEND);
+		    Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 	}
 
 	Point lastClick = new Point(0, 0);
 
 	float time = 0;
-	boolean matrix = false;
+	boolean forcedMatrix = false;
+	boolean JITMatrix = false;
 	
 	float fps = 0;
 	int frames = 0;
@@ -150,8 +206,16 @@ public class Game implements Screen
 			Gdx.graphics.setTitle("Supergun : "+frames);
 			frames = 0;
 		}
-		if(matrix)
+		if(forcedMatrix || JITMatrix)
 			delta /= 3;
+		JITMatrix = false;
+		for(Personnage p : players)
+		{
+			if(Math.abs(p.getVx()) > 90)
+			{
+				JITMatrix  = true;
+			}
+		}
 		time += delta;
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT | (Gdx.graphics.getBufferFormat().coverageSampling?GL20.GL_COVERAGE_BUFFER_BIT_NV:0));
@@ -176,85 +240,114 @@ public class Game implements Screen
 		{
 			players.get(0).renderCollision();
 		}
-		
+		if(paused)
+		{
+			 Gdx.gl.glEnable(GL20.GL_BLEND);
+			    Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+			GSB.srHud.begin(ShapeType.Filled);
+				GSB.srHud.setColor(1, 1, 1, 0.4f);
+				GSB.srHud.rect(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+			GSB.srHud.end();
+			GSB.hud.begin();
+				resume.render(0);
+				exit.render(0);
+			GSB.hud.end();
+			
+		}
 		update(delta);
 	}
 	
 	public void update(float delta)
 	{
-		if(Gdx.input.isButtonPressed(Input.Buttons.LEFT) && !Gdx.input.justTouched())
+		if(!paused)
 		{
-			camera.translate((lastClick.x - Gdx.input.getX())*camera.zoom, 0);
-			lastClick.x = Gdx.input.getX();
-			camera.translate(0, (Gdx.input.getY() - lastClick.y)*camera.zoom);
-			lastClick.y = Gdx.input.getY();
-		}
-		if(Gdx.input.isButtonPressed(Input.Buttons.LEFT) && Gdx.input.justTouched())
-		{
-			lastClick.x = Gdx.input.getX();
-			lastClick.y = Gdx.input.getY();
-		}
-
-		camera.zoom += ScrollClass.getScroll()/5f;
-		
-		if(Gdx.input.isKeyJustPressed(Input.Keys.M))
-		{
-			matrix = !matrix;
-		}
-		if(Gdx.input.isKeyJustPressed(Input.Keys.F3))
-		{
-			debug = !debug;
-		}
-		if(Gdx.input.isKeyPressed(Input.Keys.S))
-		{
-			players.get(0).move(false, delta);
-		}
-		if(Gdx.input.isKeyPressed(Input.Keys.F))
-		{
-			players.get(0).move(true, delta);
-		}
-		if(Gdx.input.isKeyJustPressed(Input.Keys.E))
-		{
-			players.get(0).jump();
-		}
-		if(Gdx.input.isKeyPressed(Input.Keys.SPACE))
-		{
-			players.get(0).fire();
-		}
-		
-		if(!IA)
-		{
+			if(Gdx.input.isButtonPressed(Input.Buttons.LEFT) && !Gdx.input.justTouched())
+			{
+				camera.translate((lastClick.x - Gdx.input.getX())*camera.zoom, 0);
+				lastClick.x = Gdx.input.getX();
+				camera.translate(0, (Gdx.input.getY() - lastClick.y)*camera.zoom);
+				lastClick.y = Gdx.input.getY();
+			}
+			if(Gdx.input.isButtonPressed(Input.Buttons.LEFT) && Gdx.input.justTouched())
+			{
+				lastClick.x = Gdx.input.getX();
+				lastClick.y = Gdx.input.getY();
+			}
+	
+			camera.zoom += ScrollClass.getScroll()/5f;
 			
-			if(Gdx.input.isKeyPressed(Input.Keys.LEFT))
+			if(Gdx.input.isKeyJustPressed(Input.Keys.M))
 			{
-				players.get(1).move(false, delta);
+				forcedMatrix = !forcedMatrix;
 			}
-			if(Gdx.input.isKeyPressed(Input.Keys.RIGHT))
+			if(Gdx.input.isKeyJustPressed(Input.Keys.F3))
 			{
-				players.get(1).move(true, delta);
+				debug = !debug;
 			}
-			if(Gdx.input.isKeyJustPressed(Input.Keys.UP))
+			if(Gdx.input.isKeyPressed(Input.Keys.S))
 			{
-				players.get(1).jump();
+				players.get(0).move(false, delta);
 			}
-			if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_RIGHT) || Gdx.input.isKeyPressed(Input.Keys.ENTER))
+			if(Gdx.input.isKeyPressed(Input.Keys.F))
 			{
-				players.get(1).fire();
+				players.get(0).move(true, delta);
 			}
-		}
-		else
-		{
-			theDevil.update(players.get(1), players.get(0), delta);
-		}
-		players.get(0).testWeapon(players.get(1), delta);
-		players.get(1).testWeapon(players.get(0), delta);
-		
-		boxs.update(delta, players.get(0), players.get(1));
+			if(Gdx.input.isKeyJustPressed(Input.Keys.E))
+			{
+				players.get(0).jump();
+			}
+			if(Gdx.input.isKeyPressed(Input.Keys.SPACE))
+			{
+				players.get(0).fire();
+			}
+			
+			if(!IA)
+			{
+				
+				if(Gdx.input.isKeyPressed(Input.Keys.LEFT))
+				{
+					players.get(1).move(false, delta);
+				}
+				if(Gdx.input.isKeyPressed(Input.Keys.RIGHT))
+				{
+					players.get(1).move(true, delta);
+				}
+				if(Gdx.input.isKeyJustPressed(Input.Keys.UP))
+				{
+					players.get(1).jump();
+				}
+				if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_RIGHT) || Gdx.input.isKeyPressed(Input.Keys.ENTER))
+				{
+					players.get(1).fire();
+				}
+			}
+			else
+			{
+				theDevil.update(players.get(1), players.get(0), delta);
+			}
+			
+			players.get(0).testWeapon(players.get(1), delta);
+			players.get(1).testWeapon(players.get(0), delta);
+			
+			boxs.update(delta, players.get(0), players.get(1));
+	
+			for(Personnage p : players)
+				p.update(delta);
+	
+			computeCamera(delta);
 
-		for(Personnage p : players)
-			p.update(delta);
+		}
 		
-		computeCamera(delta);
+		if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE))
+		{
+			paused = true;
+		}
+		
+		if(paused)
+		{
+			resume.update();
+			exit.update();
+		}
 		
 		log.log();
 		
@@ -286,14 +379,10 @@ public class Game implements Screen
 		camera.zoom = Math.round(camera.zoom*1000)/1000f;
 		
 	}
-	
-	public void resize(int width, int height)
-	{
-		
-	}
 
 	public void pause()
 	{
+		this.paused = true;
 	}
 
 	public void resume()
@@ -302,6 +391,7 @@ public class Game implements Screen
 
 	public void hide()
 	{
+		this.paused = true;
 	}
 
 	public void dispose()
@@ -310,5 +400,10 @@ public class Game implements Screen
 
 	public void show()
 	{
+	}
+	@Override
+	public void resize(int width, int height)
+	{
+		
 	}
 }

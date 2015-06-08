@@ -29,9 +29,9 @@ public class Editor implements Screen
 	BigButton save, exit, changemode, parkour;
 	Sprite gentil, mechant;
 	
-	public Editor()
+	public Editor(final String mapName)
 	{
-		map = MapManager.load("editor");
+		map = MapManager.load(mapName);
 		map.computeTypes();
 		Game.camera.zoom = 2f;
 		
@@ -49,7 +49,7 @@ public class Editor implements Screen
 			protected void onClick()
 			{
 				map.setPlayersPosition(new Coord((int)gentil.getX(), (int)gentil.getY()), new Coord((int)mechant.getX(), (int)mechant.getY()));
-				MapManager.save(map, "editor");
+				MapManager.save(map, mapName);
 			}
 		};
 		
@@ -63,7 +63,7 @@ public class Editor implements Screen
 				Gdx.input.setCursorImage(null, 0, 0);
 				Game.camera.zoom = 1;
 				GSB.update(Game.camera);
-				((com.badlogic.gdx.Game)Gdx.app.getApplicationListener()).setScreen(new MainMenu());
+				((com.badlogic.gdx.Game)Gdx.app.getApplicationListener()).setScreen(new MapMenu());
 			};
 		};
 		
@@ -165,7 +165,6 @@ public class Editor implements Screen
 	
 	boolean deletemode = false;
 	
-	@SuppressWarnings("unused")
 	private boolean alreadyBlocked(int x, int y, int type)
 	{
 		for(Block c : map.getBlocks())
@@ -196,7 +195,7 @@ public class Editor implements Screen
 			lastClick.x = Gdx.input.getX();
 			lastClick.y = Gdx.input.getY();
 		}		
-		if(Gdx.input.isButtonPressed(Input.Buttons.LEFT) && !anythingElseIsHovered(x, y))
+		if(Gdx.input.isButtonPressed(Input.Buttons.LEFT) && !anythingElseIsHovered(x, y) && !dragging)
 		{
 			ArrayList<Block> mapBlocks = map.getBlocks();
 			if(deletemode)
@@ -212,7 +211,17 @@ public class Editor implements Screen
 			}
 			else
 			{
-				map.addBox(new Coord(gridx, gridy), type);
+				if(type == 0)
+				{
+					if(!alreadyBlocked(gridx, gridy, type))
+					{
+						map.addBox(new Coord(gridx, gridy), type);
+					}
+				}
+				else
+				{
+					map.addBox(new Coord(gridx, gridy), type);
+				}
 			}
 
 			map.computeTypes();
@@ -221,11 +230,11 @@ public class Editor implements Screen
 		{
 			if(whichone == 0)
 			{
-				gentil.setPosition(x-20, y-20);
+				gentil.setPosition(x-50, y-50);
 			}
 			if(whichone == 1)
 			{
-				mechant.setPosition(x-20, y-20);
+				mechant.setPosition(x-50, y-50);
 			}
 		}
 		if(Gdx.input.isButtonPressed(Input.Buttons.LEFT))

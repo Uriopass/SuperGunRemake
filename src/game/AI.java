@@ -77,18 +77,18 @@ public class AI
 				{
 					me.move(false, delta);
 				}
-				if(enemy.x < me.x)
+				if(enemy.x < me.x) 
 				{
 					me.move(true, delta);
 				}
 			}
 		}
-		if(enemy.y > me.y && !me.jumping)
+		if(enemy.y > me.y+10 && !me.jumping || isInTheAir(me))
 		{
 			me.jump();
 		}
 		
-		if(!me.onGround() && Math.abs(me.vy) < 1 && enemy.y > me.y)
+		if(!me.onGround() && Math.abs(me.vy) < 1 && enemy.y > me.y+10)
 		{
 			me.jump();
 		}

@@ -19,6 +19,7 @@ public class TextInput implements InputProcessor
 	String current = "";
 	String regexLimit = "";
 	float time = 0;
+	boolean update = true;
 	
 	public TextInput(String text)
 	{
@@ -54,7 +55,7 @@ public class TextInput implements InputProcessor
 		}
 		else
 		{
-			gl.setText(FontManager.get(20), toShowWhenEmpty);
+			gl.setText(FontManager.get(20), current);
 			FontManager.get(20).draw(GSB.hud, current, x+10, drawy + (height+gl.height)/2);
 		}
 		if(writing)
@@ -104,15 +105,18 @@ public class TextInput implements InputProcessor
 	@Override
 	public boolean keyTyped(char character)
 	{
-		gl.setText(FontManager.get(20), current+" "+character);
-		boolean catchRegex = true;
-		if(regexLimit != "")
+		if(update)
 		{
-			catchRegex = Pattern.matches(regexLimit,""+character);
-		}
-		if(catchRegex & writing && gl.width < width - 15)
-		{
-			current += character; 
+			gl.setText(FontManager.get(20), current+" "+character);
+			boolean catchRegex = true;
+			if(regexLimit != "")
+			{
+				catchRegex = Pattern.matches(regexLimit,""+character);
+			}
+			if(catchRegex & writing && gl.width < width - 15)
+			{
+				current += character; 
+			}
 		}
 		return writing;
 	}
@@ -145,9 +149,12 @@ public class TextInput implements InputProcessor
 	@Override
 	public boolean keyDown(int keycode)
 	{
-		if(keycode == Input.Keys.BACKSPACE && !current.equals(""))
+		if(update)
 		{
-			current = current.substring(0, current.length()-1);
+			if(keycode == Input.Keys.BACKSPACE && !current.equals(""))
+			{
+				current = current.substring(0, current.length()-1);
+			}
 		}
 		return true;
 	}
@@ -185,5 +192,15 @@ public class TextInput implements InputProcessor
 	public boolean scrolled(int amount)
 	{
 		return false;
+	}
+
+	public void reset()
+	{
+		this.current = "";	
+	}
+
+	public void setUpdate(boolean b)
+	{
+		this.update = b;
 	}
 }

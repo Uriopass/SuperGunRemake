@@ -4,7 +4,6 @@ import screens.Options;
 
 public class Pistol extends BulletWeapon
 {
-
 	public Pistol()
 	{
 		super();
@@ -21,5 +20,4 @@ public class Pistol extends BulletWeapon
 		this.setVelocityScale(1);
 		this.name = "Pistol";
 	}
-
 }

@@ -15,7 +15,7 @@ import data.GSB;
 
 public class MainMenu implements Screen
 {
-	BigButton play, exit, editor, options;
+	BigButton play, exit, options;
 	ArrayList<ParticleEmitter> pe = new ArrayList<ParticleEmitter>();
 	ParticleEmitter mouse;
 	
@@ -27,21 +27,11 @@ public class MainMenu implements Screen
 			@Override
 			protected void onClick()
 			{
-				((com.badlogic.gdx.Game)Gdx.app.getApplicationListener()).setScreen(new Game());
+				((com.badlogic.gdx.Game)Gdx.app.getApplicationListener()).setScreen(new MapMenu());
 			}
 		};
 		play.setLocation(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2+100);
 		play.center(true, false);
-		
-		editor = new BigButton("Editor")
-		{
-			protected void onClick() 
-			{
-				((com.badlogic.gdx.Game)Gdx.app.getApplicationListener()).setScreen(new Editor());
-			};
-		};
-
-		editor.setLocation(play.getX(), play.getY()-play.getHeight());
 		
 		options = new BigButton("Options")
 		{
@@ -51,7 +41,7 @@ public class MainMenu implements Screen
 			};
 		};
 
-		options.setLocation(editor.getX(), editor.getY()-editor.getHeight());
+		options.setLocation(play.getX(), play.getY()-play.getHeight());
 		
 		
 		exit = new BigButton("Exit")
@@ -95,7 +85,6 @@ public class MainMenu implements Screen
 		mouse.render();
 		GSB.hud.begin();
 			play.render(0);
-			editor.render(0);
 			options.render(0);
 			exit.render(0);
 		GSB.hud.end();
@@ -111,7 +100,6 @@ public class MainMenu implements Screen
 		speed+=.01f;
 		play.update();
 		exit.update();
-		editor.update();
 		options.update();
 		if(Gdx.input.isButtonPressed(Input.Buttons.LEFT))
 		{

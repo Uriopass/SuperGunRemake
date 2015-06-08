@@ -4,14 +4,10 @@ import java.util.ArrayList;
 
 import screens.Options;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 
 public class Shotgun extends BulletWeapon
 {
-
-	Sound reload, fire;
 	public Shotgun()
 	{
 		super();
@@ -28,17 +24,15 @@ public class Shotgun extends BulletWeapon
 			this.setDamage(7);
 		}
 		this.setVelocityScale(1.2f);
-		reload = Gdx.audio.newSound(Gdx.files.internal("Armes/reload.mp3"));
-		fire = Gdx.audio.newSound(Gdx.files.internal("Armes/pistol.mp3"));
 	}
 
 	@Override
 	protected ArrayList<Bullet> getFiredBullets(Texture text)
 	{
 		ArrayList<Bullet> fired = new ArrayList<Bullet>();
-		fired.add(new Bullet(owner.getX() + paddingx + text.getWidth(), owner.getY() + paddingy + text.getHeight()/2 + 5, velocity, 5, damage));
-		fired.add(new Bullet(owner.getX() + paddingx + text.getWidth(), owner.getY() + paddingy + text.getHeight()/2 + 5, velocity, 0, damage));
-		fired.add(new Bullet(owner.getX() + paddingx + text.getWidth(), owner.getY() + paddingy + text.getHeight()/2 + 5, velocity, -5, damage));
+		fired.add(new Bullet(owner.getX() + paddingx, owner.getY() + paddingy + text.getHeight()/2 + 5, velocity, 5, damage));
+		fired.add(new Bullet(owner.getX() + paddingx, owner.getY() + paddingy + text.getHeight()/2 + 5, velocity, 0, damage));
+		fired.add(new Bullet(owner.getX() + paddingx, owner.getY() + paddingy + text.getHeight()/2 + 5, velocity, -5, damage));
 		return fired;
 	}
 	@Override

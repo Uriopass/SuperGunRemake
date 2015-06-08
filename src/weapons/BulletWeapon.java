@@ -6,8 +6,6 @@ import java.util.ArrayList;
 
 import screens.Options;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Rectangle;
@@ -25,16 +23,27 @@ public class BulletWeapon extends Weapon
 	float velocityScale = 1.5f;
 	
 	ArrayList<Bullet> bullets;
-	Sound fire;
 	public BulletWeapon()
 	{
 		super();
 		bullets = new ArrayList<Bullet>();
-		fire = Gdx.audio.newSound(Gdx.files.internal("Armes/pistol.mp3"));
 	}
 	public void setRate(int rate)
 	{
 		fireRate = rate;
+	}
+	
+	public float getLastFire()
+	{
+		if(lastFire < 0)
+			return 0;
+		else
+			return lastFire;
+	}
+	
+	public int getFireRate()
+	{
+		return fireRate;
 	}
 	
 	public static void setMinMaxX(int minx, int maxx)
@@ -54,7 +63,10 @@ public class BulletWeapon extends Weapon
 		{
 			bullets.add(b);
 		}
-		this.lastFire = other.lastFire;
+		if(other.name == this.name)
+		{
+			this.lastFire = other.lastFire;
+		}
 	}
 	
 	public void setDamage(int damage)
@@ -86,7 +98,7 @@ public class BulletWeapon extends Weapon
 				if(!owner.getDirection())
 				{
 					b.inverteVx();
-					b.x -= owner.getHitbox().width + text.getWidth();
+					b.x -= owner.getHitbox().width + text.getWidth() - 20;
 				}
 				bullets.add(b);
 				onFire();
@@ -97,7 +109,7 @@ public class BulletWeapon extends Weapon
 	protected ArrayList<Bullet> getFiredBullets(Texture text)
 	{
 		ArrayList<Bullet> toShoot = new ArrayList<Bullet>();
-		toShoot.add(new Bullet(owner.getX() + paddingx, owner.getY() + paddingy + text.getHeight()/2 + 5, velocity, 0, damage));
+		toShoot.add(new Bullet(owner.getX()+paddingx, owner.getY() + paddingy + text.getHeight()/2 + 5, velocity, 0, damage));
 		return toShoot;
 	}
 	

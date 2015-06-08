@@ -13,6 +13,7 @@ public class TodoList
 	 * --> [DONE] Two modes, create and destroy
 	 * - [DONE] Box spawn randomly in the air and drop
 	 * - [DONE] Better bullets
+	 * - [DONE] pause mode
 	 * - More weapons
 	 * --> [DONE] Shotgun
 	 * --> [DONE] Sniper
@@ -33,5 +34,7 @@ public class TodoList
 	 * Bugs : 
 	 * - No normal jump when falling [FIXED]
 	 * - Bullets disappear on edges [FIXED]
+	 * - Weirdo double jump [DONE]
+	 * - Weapons position [DONE]
 	 */
 }

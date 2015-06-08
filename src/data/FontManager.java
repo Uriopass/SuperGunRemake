@@ -47,4 +47,14 @@ public class FontManager
 		}
 		return fonts.get(size);
 	}
+	
+	public static BitmapFont getInstance(int size)
+	{
+		parameter.size = size;
+		
+		BitmapFont b = generator.generateFont(parameter);
+		b.setColor(Color.BLACK);
+		
+		return b;
+	}
 }

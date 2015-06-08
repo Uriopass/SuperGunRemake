@@ -17,6 +17,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Animation.PlayMode;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
@@ -35,7 +36,7 @@ public class Personnage
 {
 	Animation sprite;
 	int id;
-	boolean moving = true, jumping = false, doublejump = false;
+	boolean moving = true, jumping = false;
 	int originX, originY;
 	
 	ParticleEmitter blood = new ParticleEmitter(0, 0, 8);
@@ -56,8 +57,10 @@ public class Personnage
 	float realAcceleration = acceleration;
 	float friction = .8f;
 	int jumpspeed = 32;
-	int doublejumpspeed = 30;
-	int dieY;
+	
+	int jumps = 2;
+	
+	private int dieY;
 	int life = 100;
 	Sprite ui;
 	int score;
@@ -72,6 +75,11 @@ public class Personnage
 	
 	Personnage enemy;
 	
+	BitmapFont weaponText = null;
+	
+	float weaponNameActual = 0;
+	float weaponNameTime = 1;
+	
 	public Personnage(int id, int dieY)
 	{
 		this.dieY = dieY;
@@ -84,6 +92,8 @@ public class Personnage
 		blood.setRate(8);
 		blood.enableGravity(-.2f);
 		blood.setLife(20);
+		
+		weaponText = FontManager.getInstance(50);
 		
 		ui = new Sprite(SpriteManager.get("personnage_ui.png"));
 		if(id == 1)
@@ -108,8 +118,6 @@ public class Personnage
 		}
 		sprite = new Animation(0.10f, frames);
 		sprite.setPlayMode(PlayMode.LOOP);
-		
-		 setWeapon(new Pistol());
 	}
 	
 	public void setEnnemy(Personnage ennemy)
@@ -133,6 +141,12 @@ public class Personnage
 			GSB.sb.draw(sprite.getKeyFrame(0f), x, y);
 		}
 		weapon.render();
+		
+		if(weaponNameActual > 0)
+		{
+			weaponText.setColor(0, 0, 0, weaponNameActual/weaponNameTime);
+			weaponText.draw(GSB.sb, weapon.getName(), this.x, this.y + hitbox.height+30+(weaponNameTime-weaponNameActual)*100);
+		}
 	}
 	
 	public void renderUI()
@@ -151,6 +165,14 @@ public class Personnage
 				if(Options.ammoActivated)
 				{
 					GSB.srHud.rect(ui.getX()+64, ui.getY()+73, ((float)weapon.getAmmo()/weapon.getMaxAmmo())*150f, 10);
+				}
+				else
+				{
+					if(weapon instanceof BulletWeapon)
+					{
+						BulletWeapon weapon = (BulletWeapon) this.weapon;
+						GSB.srHud.rect(ui.getX()+64, ui.getY()+73, (1-(float)weapon.getLastFire()/weapon.getFireRate())*150f, 10);
+					}
 				}
 			GSB.srHud.end();
 			GSB.hud.begin();
@@ -178,6 +200,14 @@ public class Personnage
 				{
 					GSB.srHud.rect(ui.getX()+178, ui.getY()+73,-((float)weapon.getAmmo()/weapon.getMaxAmmo())*150f, 10);
 				}
+				else
+				{
+					if(weapon instanceof BulletWeapon)
+					{
+						BulletWeapon weapon = (BulletWeapon) this.weapon;
+						GSB.srHud.rect(ui.getX()+178, ui.getY()+73, -(1-(float)weapon.getLastFire()/weapon.getFireRate())*150f, 10);
+					}
+				}
 			GSB.srHud.end();
 
 			GSB.hud.begin();
@@ -188,7 +218,7 @@ public class Personnage
 				}
 				FontManager.get(12).draw(GSB.hud, "Arme : "+weapon.getName(), ui.getX()+64, ui.getY()+60);
 				FontManager.get(12).draw(GSB.hud, "Score", ui.getX()+190, ui.getY()+50);
-				FontManager.get(12).draw(GSB.hud, ""+score, ui.getX()+200, ui.getY()+30);
+				FontManager.get(12).draw(GSB.hud, ""+score, ui.getX()+210, ui.getY()+30);
 				GSB.hud.draw(TextureManager.get("Mechant/avatar.png"), ui.getX()+192, ui.getY()+ui.getHeight()-50);
 			GSB.hud.end();
 		}
@@ -196,6 +226,7 @@ public class Personnage
 
 	public void setWeapon(Weapon newweapon)
 	{
+		weaponNameActual = weaponNameTime;
 		newweapon.setOwner(this);
 		if(newweapon instanceof BulletWeapon)
 		{
@@ -209,7 +240,7 @@ public class Personnage
 	
 	public boolean isDead()
 	{
-		return y < dieY || life <= 0;
+		return y < getDieY() || life <= 0;
 	}
 	/**
 	 * direction : True for right and false for left
@@ -249,6 +280,10 @@ public class Personnage
 	int bugCorector = 5;
 	public void update(float delta)
 	{
+		if(weaponNameActual > 0)
+		{
+			weaponNameActual -= delta;
+		}
 		if(bugCorector-- > 0)
 		{
 			delta = 1/60f;
@@ -283,6 +318,7 @@ public class Personnage
 		if(onGround())
 		{
 			realAcceleration = acceleration*2;
+			jumps = 2;
 		}
 		else
 		{
@@ -322,7 +358,7 @@ public class Personnage
 				if(vy < 0)
 				{
 					jumping = false;
-					doublejump = false;
+					jumps = 2;
 					float max = -1000000;
 					for(int i = 1 ; i < collidedPoly.getTransformedVertices().length ; i += 2)
 						if(collidedPoly.getTransformedVertices()[i] > max)
@@ -333,12 +369,11 @@ public class Personnage
 			}
 			else
 			{
-				if(!jumping)
-				{
-					doublejump = true;
-				}
+				if(jumps > 0)
+					jumps = 1;
 			}
 		}
+		
 		if(isDead())
 		{
 			respawn();
@@ -377,16 +412,16 @@ public class Personnage
 			vertices[3] = 0;
 
 			vertices[4] = 256;
-			vertices[5] = 234;
+			vertices[5] = 210;
 
 			vertices[6] = 0;
-			vertices[7] = 234;
+			vertices[7] = 210;
 		}
 		if(type == Map.RIGHT)
 		{
 			vertices = new float[5 * 2];
 			vertices[0] = 10;
-			vertices[1] = 234;
+			vertices[1] = 210;
 
 			vertices[2] = 10;
 			vertices[3] = 180;
@@ -398,7 +433,7 @@ public class Personnage
 			vertices[7] = 0;
 
 			vertices[8] = 256;
-			vertices[9] = 234;
+			vertices[9] = 210;
 		}
 		if(type == Map.LEFT)
 		{
@@ -413,10 +448,10 @@ public class Personnage
 			vertices[5] = 180;
 
 			vertices[6] = 240;
-			vertices[7] = 234;
+			vertices[7] = 210;
 
 			vertices[8] = 0;
-			vertices[9] = 234;
+			vertices[9] = 210;
 		}
 		collisions.add(new Polygon(vertices));
 		map.add(c);
@@ -550,18 +585,17 @@ public class Personnage
 
 	public void jump()
 	{
-		if(doublejump || Game.debug)
+		if(Game.debug)
 		{
-			doublejump = false;
-			vy = doublejumpspeed;
+			vy = jumpspeed;
 			jumping = true;
 			return;
 		}
-		if(!jumping)
+		if(jumps > 0)
 		{
+			jumps--;
 			jumping = true;
 			vy = jumpspeed;
-			doublejump = true;
 		}
 	}
 	
@@ -633,4 +667,8 @@ public class Personnage
 		this.vx = vx;
 	}
 
+	public int getDieY()
+	{
+		return dieY;
+	}
 }

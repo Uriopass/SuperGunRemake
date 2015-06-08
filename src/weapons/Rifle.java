@@ -8,7 +8,7 @@ public class Rifle extends BulletWeapon
 	public Rifle()
 	{
 		super();
-		this.setPath("Armes/gun.png");
+		this.setPath("Armes/rifle.png");
 		this.setRate(10);
 		this.setPadding(27, 8);
 		this.setMaxAmmo(40);

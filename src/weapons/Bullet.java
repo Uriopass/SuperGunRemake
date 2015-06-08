@@ -54,11 +54,11 @@ public class Bullet
 		
 		if(vx > 0)
 		{
-			collision[0] = new Vector2(x+image.getWidth(), y+image.getHeight()/2);
+			collision[0] = new Vector2(x+image.getWidth()-30, y+image.getHeight()/2);
 		}
 		else
 		{
-			collision[0] = new Vector2(x, y+image.getHeight()/2);
+			collision[0] = new Vector2(x+30, y+image.getHeight()/2);
 		}
 		collision[1] = new Vector2(collision[0].x + vx*delta*60, collision[0].y + vy*delta*60);
 		return collision;
