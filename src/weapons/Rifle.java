@@ -11,7 +11,7 @@ public class Rifle extends BulletWeapon
 		this.setPath("Armes/rifle.png");
 		this.setRate(10);
 		this.setPadding(27, 8);
-		this.setMaxAmmo(40);
+		this.setMaxAmmo(80);
 		this.setVelocity(40);
 		this.setDamage(3);
 		if(!Options.brawlModeActivated)

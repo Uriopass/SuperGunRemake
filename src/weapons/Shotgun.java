@@ -16,7 +16,7 @@ public class Shotgun extends BulletWeapon
 		this.setPath("Armes/shotgun.png");
 		this.setRate(45);
 		this.setPadding(27, 8);
-		this.setMaxAmmo(20);
+		this.setMaxAmmo(35);
 		this.setVelocity(30);
 		this.setDamage(3);
 		if(!Options.brawlModeActivated)

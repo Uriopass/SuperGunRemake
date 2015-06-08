@@ -67,6 +67,8 @@ public class Personnage
 	float physicsPrecision = 1;
 	float gravity = .8f;
 	
+	float invincible = 2f;
+	
 	ArrayList<Block> map;
 	
 	Rectangle hitbox = new Rectangle(x + 23, y + 3, 55, 105);
@@ -171,6 +173,8 @@ public class Personnage
 					if(weapon instanceof BulletWeapon)
 					{
 						BulletWeapon weapon = (BulletWeapon) this.weapon;
+						if(weapon.getLastFire() == 0)
+							GSB.srHud.setColor(.1f, 1f, 0, .7f);
 						GSB.srHud.rect(ui.getX()+64, ui.getY()+73, (1-(float)weapon.getLastFire()/weapon.getFireRate())*150f, 10);
 					}
 				}
@@ -205,6 +209,8 @@ public class Personnage
 					if(weapon instanceof BulletWeapon)
 					{
 						BulletWeapon weapon = (BulletWeapon) this.weapon;
+						if(weapon.getLastFire() == 0)
+							GSB.srHud.setColor(.1f, 1f, 0, .7f);
 						GSB.srHud.rect(ui.getX()+178, ui.getY()+73, -(1-(float)weapon.getLastFire()/weapon.getFireRate())*150f, 10);
 					}
 				}
@@ -280,6 +286,10 @@ public class Personnage
 	int bugCorector = 5;
 	public void update(float delta)
 	{
+		if(invincible > 0)
+		{
+			invincible -= delta;
+		}
 		if(weaponNameActual > 0)
 		{
 			weaponNameActual -= delta;
@@ -288,6 +298,15 @@ public class Personnage
 		{
 			delta = 1/60f;
 		}
+		
+		if(weapon instanceof BulletWeapon)
+		{
+			if(((BulletWeapon)weapon).getAmmo() <= 0 && ((BulletWeapon)weapon).getName() != "Pistol")
+			{
+				this.setWeapon(new Pistol());
+			}
+		}
+		
 		blood.update(delta*2);
 		time += delta;
 		
@@ -402,7 +421,61 @@ public class Personnage
 	{
 		int type = c.getFlag();
 		float[] vertices = null;
-		if(type == Map.GROUND)
+		if(c.getType() == 0)
+		{
+			if(type == Map.GROUND)
+			{
+				vertices = new float[4 * 2];
+				vertices[0] = 0;
+				vertices[1] = 0;
+	
+				vertices[2] = 256;
+				vertices[3] = 0;
+	
+				vertices[4] = 256;
+				vertices[5] = 210;
+	
+				vertices[6] = 0;
+				vertices[7] = 210;
+			}
+			if(type == Map.RIGHT)
+			{
+				vertices = new float[5 * 2];
+				vertices[0] = 10;
+				vertices[1] = 210;
+	
+				vertices[2] = 10;
+				vertices[3] = 180;
+	
+				vertices[4] = 190;
+				vertices[5] = 0;
+	
+				vertices[6] = 256;
+				vertices[7] = 0;
+	
+				vertices[8] = 256;
+				vertices[9] = 210;
+			}
+			if(type == Map.LEFT)
+			{
+				vertices = new float[5 * 2];
+				vertices[0] = 0;
+				vertices[1] = 0;
+	
+				vertices[2] = 70;
+				vertices[3] = 0;
+	
+				vertices[4] = 240;
+				vertices[5] = 180;
+	
+				vertices[6] = 240;
+				vertices[7] = 210;
+	
+				vertices[8] = 0;
+				vertices[9] = 210;
+			}
+		}
+		else if (c.getType() == 1)
 		{
 			vertices = new float[4 * 2];
 			vertices[0] = 0;
@@ -412,46 +485,10 @@ public class Personnage
 			vertices[3] = 0;
 
 			vertices[4] = 256;
-			vertices[5] = 210;
+			vertices[5] = 256;
 
 			vertices[6] = 0;
-			vertices[7] = 210;
-		}
-		if(type == Map.RIGHT)
-		{
-			vertices = new float[5 * 2];
-			vertices[0] = 10;
-			vertices[1] = 210;
-
-			vertices[2] = 10;
-			vertices[3] = 180;
-
-			vertices[4] = 190;
-			vertices[5] = 0;
-
-			vertices[6] = 256;
-			vertices[7] = 0;
-
-			vertices[8] = 256;
-			vertices[9] = 210;
-		}
-		if(type == Map.LEFT)
-		{
-			vertices = new float[5 * 2];
-			vertices[0] = 0;
-			vertices[1] = 0;
-
-			vertices[2] = 70;
-			vertices[3] = 0;
-
-			vertices[4] = 240;
-			vertices[5] = 180;
-
-			vertices[6] = 240;
-			vertices[7] = 210;
-
-			vertices[8] = 0;
-			vertices[9] = 210;
+			vertices[7] = 256;
 		}
 		collisions.add(new Polygon(vertices));
 		map.add(c);
@@ -614,6 +651,8 @@ public class Personnage
 		this.x = originX;
 		this.y = originY;
 		
+		invincible = 1f;
+		
 		enemy.score++;
 		
 		life = 100;
@@ -642,7 +681,7 @@ public class Personnage
 
 	public void addLife(int i)
 	{
-		if(i < 0)
+		if(i <= 0)
 		{
 			blood.startEmitting(0.1f);
 		}
@@ -670,5 +709,10 @@ public class Personnage
 	public int getDieY()
 	{
 		return dieY;
+	}
+
+	public boolean isInvicible()
+	{
+		return invincible > 0;
 	}
 }

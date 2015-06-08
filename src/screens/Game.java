@@ -11,8 +11,7 @@ import map.Map;
 import ui_buttons.BigButton;
 import ui_buttons.ScrollClass;
 import weapons.BulletWeapon;
-import weapons.Shotgun;
-import weapons.Sniper;
+import weapons.Pistol;
 import boxs.WorldBoxs;
 
 import com.badlogic.gdx.Gdx;
@@ -58,6 +57,9 @@ public class Game implements Screen
 		GSB.init(camera);
 		Gdx.input.setInputProcessor(new ScrollClass());
 	}
+	
+	public static boolean invincible = false;
+	
 	public Game(String mapName)
 	{
 		ColorManager.reset();
@@ -130,8 +132,8 @@ public class Game implements Screen
 		players.get(0).setEnnemy(players.get(1));
 		players.get(1).setEnnemy(players.get(0));
 		
-		players.get(0).setWeapon(new Shotgun());
-		players.get(1).setWeapon(new Sniper());
+		players.get(0).setWeapon(new Pistol());
+		players.get(1).setWeapon(new Pistol());
 		
 		for(Block c : m.getBlocks())
 		{
@@ -274,7 +276,7 @@ public class Game implements Screen
 				lastClick.y = Gdx.input.getY();
 			}
 	
-			camera.zoom += ScrollClass.getScroll()/5f;
+			cameraScroll += ScrollClass.getScroll()/100f;
 			
 			if(Gdx.input.isKeyJustPressed(Input.Keys.M))
 			{
@@ -343,6 +345,11 @@ public class Game implements Screen
 			paused = true;
 		}
 		
+		if(Gdx.input.isKeyJustPressed(Input.Keys.I))
+		{
+			invincible = !invincible;
+		}
+		
 		if(paused)
 		{
 			resume.update();
@@ -355,6 +362,7 @@ public class Game implements Screen
 		GSB.update(camera);
 	}
 	FPSLogger log = new FPSLogger();
+	float cameraScroll = 0;
 	private void computeCamera(float delta)
 	{
 		float centerx = players.get(0).getX() + players.get(1).getX();
@@ -374,7 +382,7 @@ public class Game implements Screen
 		
 		lerp = 0.03f;
 		
-		camera.zoom += (2.5f + ((Options.ParkourActivated)?3:0) + (float)(distance/(Gdx.graphics.getWidth())) - camera.zoom) * lerp * delta * 60;
+		camera.zoom += cameraScroll + (2.5f + ((Options.ParkourActivated)?3:0) + (float)(distance/(Gdx.graphics.getWidth())) - camera.zoom) * lerp * delta * 60;
 		
 		camera.zoom = Math.round(camera.zoom*1000)/1000f;
 		

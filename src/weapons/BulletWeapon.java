@@ -4,6 +4,7 @@ import game.Personnage;
 
 import java.util.ArrayList;
 
+import screens.Game;
 import screens.Options;
 
 import com.badlogic.gdx.graphics.Texture;
@@ -212,11 +213,18 @@ public class BulletWeapon extends Weapon
 			
 			if(isCollision(pos, pers.getVxHitbox()) || pers.getVxHitbox().contains(pos[0]))
 			{
-				pers.addLife(-damage);
-				
-				if(Options.brawlModeActivated)
+				if(pers.isInvicible() || Game.invincible)
 				{
-					pers.setVx(pers.getVx()/2 + b.vx*velocityScale*lifemultiplier);
+					pers.addLife(0);
+				}
+				else
+				{
+					pers.addLife(-damage);
+					
+					if(Options.brawlModeActivated)
+					{
+						pers.setVx(pers.getVx()/2 + b.vx*velocityScale*lifemultiplier);
+					}
 				}
 				bullets.remove(i);
 				i--;

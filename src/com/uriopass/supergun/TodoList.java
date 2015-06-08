@@ -27,6 +27,10 @@ public class TodoList
 	 * - More modes
 	 * --> [DONE] Normal
 	 * --> [DONE] Brawl
+	 * - [DONE] logo
+	 * - more characters
+	 * - Handicap
+	 * - 3... 2... 1... GOOO !! (or FIGHT !!)
 	 * --> Parkour
 	 * -- --> [DONE] Parkour generator
 	 * - [DONE] AI.
