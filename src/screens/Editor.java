@@ -17,7 +17,6 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 
 import data.Coord;
-import data.FontManager;
 import data.GSB;
 import data.MapManager;
 import data.SpriteManager;
@@ -28,6 +27,9 @@ public class Editor implements Screen
 	Map map;
 	BigButton save, exit, changemode, parkour;
 	Sprite gentil, mechant;
+	Sprite normalBlock, voidBlock;
+	
+	int blockSize = 60;
 	
 	public Editor(final String mapName)
 	{
@@ -42,6 +44,18 @@ public class Editor implements Screen
 		mechant.setPosition(map.getMechantPos().getX(), map.getMechantPos().getY());
 		
 		delete = TextureManager.getPixmap("delete.png");
+		
+		normalBlock = new Sprite(SpriteManager.get("sol.png"));
+		voidBlock = new Sprite(SpriteManager.get("void.png"));
+		
+		normalBlock.setSize(blockSize-10, blockSize-10);
+		voidBlock.setSize(blockSize+10, blockSize+10);
+
+		normalBlock.setCenterX(Gdx.graphics.getWidth()/2-normalBlock.getWidth()/2-20);
+		normalBlock.setY(Gdx.graphics.getHeight()-normalBlock.getHeight()-5);
+
+		voidBlock.setCenterX(Gdx.graphics.getWidth()/2+voidBlock.getWidth()/2+10);
+		voidBlock.setY(Gdx.graphics.getHeight()-normalBlock.getHeight()-15);
 		
 		save = new BigButton("Save")
 		{
@@ -91,8 +105,7 @@ public class Editor implements Screen
 				map.computeTypes();
 			};
 		};
-		parkour.setLocation(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()-changemode.getHeight());
-		parkour.center(true, false);
+		parkour.setLocation(0, Gdx.graphics.getHeight()-changemode.getHeight());
 	}
 	
 	Point lastClick = new Point(0, 0);
@@ -141,6 +154,33 @@ public class Editor implements Screen
 			GSB.srCam.end();
 		Gdx.gl.glDisable(GL20.GL_BLEND);
 		}
+
+		GSB.srHud.begin(ShapeType.Filled);
+		{
+			 Gdx.gl.glEnable(GL20.GL_BLEND);
+			    Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+			   GSB.srHud.setColor(.7f,.7f,.7f, 0.7f);
+			   
+			GSB.srHud.rect(Gdx.graphics.getWidth()/2 - blockSize*2, Gdx.graphics.getHeight()-blockSize, blockSize*4, blockSize);
+			GSB.srHud.triangle(Gdx.graphics.getWidth()/2 - blockSize*2 - 30, Gdx.graphics.getHeight(),
+					Gdx.graphics.getWidth()/2 - blockSize*2, Gdx.graphics.getHeight(),
+					Gdx.graphics.getWidth()/2 - blockSize*2, Gdx.graphics.getHeight()-blockSize);
+			GSB.srHud.triangle(Gdx.graphics.getWidth()/2 + blockSize*2 + 30, Gdx.graphics.getHeight(),
+					Gdx.graphics.getWidth()/2 + blockSize*2, Gdx.graphics.getHeight(),
+					Gdx.graphics.getWidth()/2 + blockSize*2, Gdx.graphics.getHeight()-blockSize);
+			   GSB.srHud.setColor(.3f,.3f,.3f, 0.2f);
+				
+			if(type == 0)
+			{
+				GSB.srHud.rect(normalBlock.getX()-5, normalBlock.getY()-5, normalBlock.getWidth()+10, normalBlock.getHeight()+10);
+			}
+			if(type == 1)
+			{
+				GSB.srHud.rect(normalBlock.getX()+83, normalBlock.getY()-5, normalBlock.getWidth()+10, normalBlock.getHeight()+10);
+			}
+		}
+		GSB.srHud.end();
+		
 		GSB.hud.begin();
 			save.render(0);
 			exit.render(0);
@@ -149,7 +189,9 @@ public class Editor implements Screen
 			{
 				parkour.render(0);
 			}
-			FontManager.get(15).draw(GSB.hud, "Current block [1-9] : "+(type+1), 10, Gdx.graphics.getHeight()-10);
+			normalBlock.draw(GSB.hud); 
+			voidBlock.draw(GSB.hud);
+			
 		GSB.hud.end();
 		
 		update(delta, gridx, gridy, x, y);
@@ -157,7 +199,13 @@ public class Editor implements Screen
 	
 	public boolean anythingElseIsHovered(float x, float y)
 	{
-		return parkour.isHovered() ||changemode.isHovered() || save.isHovered() || gentil.getBoundingRectangle().contains(x, y) || mechant.getBoundingRectangle().contains(x, y);
+		if(parkour.isHovered() ||changemode.isHovered() || save.isHovered() || gentil.getBoundingRectangle().contains(x, y) || mechant.getBoundingRectangle().contains(x, y))
+			return true;
+		if(normalBlock.getBoundingRectangle().contains(Gdx.input.getX(),Gdx.graphics.getHeight() - Gdx.input.getY()))
+			return true;
+		if(voidBlock.getBoundingRectangle().contains(Gdx.input.getX(),Gdx.graphics.getHeight() - Gdx.input.getY()))
+			return true;
+		return false;
 	}
 	boolean dragging;
 	int whichone;
@@ -194,7 +242,14 @@ public class Editor implements Screen
 		{
 			lastClick.x = Gdx.input.getX();
 			lastClick.y = Gdx.input.getY();
-		}		
+		}
+		if(Gdx.input.isButtonPressed(Input.Buttons.LEFT) && Gdx.input.justTouched())
+		{
+			if(normalBlock.getBoundingRectangle().contains(Gdx.input.getX(),Gdx.graphics.getHeight() - Gdx.input.getY()))
+				type = 0;
+			if(voidBlock.getBoundingRectangle().contains(Gdx.input.getX(),Gdx.graphics.getHeight() - Gdx.input.getY()))
+				type = 1;
+		}
 		if(Gdx.input.isButtonPressed(Input.Buttons.LEFT) && !anythingElseIsHovered(x, y) && !dragging)
 		{
 			ArrayList<Block> mapBlocks = map.getBlocks();

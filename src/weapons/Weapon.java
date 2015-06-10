@@ -37,6 +37,11 @@ public class Weapon
 		this.name = name;
 	}
 	
+	public void setAmmo(int ammo)
+	{
+		this.ammo = ammo;
+	}
+	
 	public void setMaxAmmo(int maxAmmo)
 	{
 		this.maxammo = maxAmmo;

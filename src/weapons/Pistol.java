@@ -10,7 +10,7 @@ public class Pistol extends BulletWeapon
 		this.setPath("Armes/gun.png");
 		this.setRate(20);
 		this.setPadding(27, 8);
-		this.setMaxAmmo(100);
+		this.setMaxAmmo(1);
 		this.setVelocity(40);
 		this.setDamage(5);
 		if(!Options.brawlModeActivated)
@@ -19,5 +19,11 @@ public class Pistol extends BulletWeapon
 		}
 		this.setVelocityScale(.6f);
 		this.name = "Pistol";
+	}
+	
+	@Override
+	public void setAmmo(int ammo)
+	{
+		this.ammo = maxammo;
 	}
 }

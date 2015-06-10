@@ -86,11 +86,11 @@ public class BulletWeapon extends Weapon
 		Texture text = TextureManager.get(path);
 		if(Options.ammoActivated)
 		{
-			ammo--;
+			setAmmo(ammo - 1);;
 		}
 		if(ammo < 0)
 		{
-			ammo = 0;
+			setAmmo(0);
 		}
 		else
 		{
@@ -208,7 +208,7 @@ public class BulletWeapon extends Weapon
 			Bullet b = bullets.get(i);
 			Vector2[] pos = b.getCollision(delta);
 			
-			float lifemultiplier = 1+2*(100f-pers.getLife())/100f;
+			float lifemultiplier = 1+4*(100f-pers.getLife())/100f;
 			
 			
 			if(isCollision(pos, pers.getVxHitbox()) || pers.getVxHitbox().contains(pos[0]))

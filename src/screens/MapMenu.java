@@ -182,7 +182,7 @@ public class MapMenu implements Screen
 					}
 					GSB.srHud.rect(x, y, 200, 100);
 					x += 250;
-					if(x > Gdx.graphics.getWidth() - exit.getWidth() - 100)
+					if((x + 250) > Gdx.graphics.getWidth() - exit.getWidth() - 100)
 					{
 						x = 30;
 						y -= 150;
@@ -198,7 +198,7 @@ public class MapMenu implements Screen
 				GlyphLayout gl = new GlyphLayout(FontManager.get(18), s);
 				FontManager.get(18).draw(GSB.hud, s, x+100-gl.width/2, y+55);
 				x += 250;
-				if(x > Gdx.graphics.getWidth() - exit.getWidth() - 100)
+				if((x + 250) > Gdx.graphics.getWidth() - exit.getWidth() - 100)
 				{
 					x = 30;
 					y -= 150;
@@ -244,7 +244,7 @@ public class MapMenu implements Screen
 						selected = "";
 					}
 					x += 250;
-					if(x > Gdx.graphics.getWidth() - exit.getWidth() - 100)
+					if((x + 250) > Gdx.graphics.getWidth() - exit.getWidth() - 100)
 					{
 						x = 30;
 						y -= 150;

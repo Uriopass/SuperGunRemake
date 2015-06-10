@@ -30,7 +30,7 @@ public class TodoList
 	 * - [DONE] logo
 	 * - more characters
 	 * - Handicap
-	 * - 3... 2... 1... GOOO !! (or FIGHT !!)
+	 * - [DONE] 3... 2... 1... GOOO !! (or FIGHT !!)
 	 * --> Parkour
 	 * -- --> [DONE] Parkour generator
 	 * - [DONE] AI.

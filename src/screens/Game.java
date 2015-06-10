@@ -27,6 +27,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector3;
 
 import data.ColorManager;
+import data.FontManager;
 import data.GSB;
 import data.MapManager;
 import data.SpriteManager;
@@ -195,6 +196,8 @@ public class Game implements Screen
 	boolean forcedMatrix = false;
 	boolean JITMatrix = false;
 	
+	float begin = 3;
+	
 	float fps = 0;
 	int frames = 0;
 	@Override
@@ -222,7 +225,8 @@ public class Game implements Screen
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT | (Gdx.graphics.getBufferFormat().coverageSampling?GL20.GL_COVERAGE_BUFFER_BIT_NV:0));
 
-		background.setPosition(originX-camera.position.x/40, originY-camera.position.y/40);
+		background.setPosition(originX-camera.position.x/80, originY-camera.position.y/80);
+		background.setScale(Gdx.graphics.getWidth()/(background.getWidth()/2));
 		
 		GSB.hud.begin();
 			background.draw(GSB.hud);
@@ -242,6 +246,20 @@ public class Game implements Screen
 		{
 			players.get(0).renderCollision();
 		}
+		
+		if(begin > 0)
+		{
+			GSB.srHud.begin(ShapeType.Filled);
+			 Gdx.gl.glEnable(GL20.GL_BLEND);
+			    Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+				GSB.srHud.setColor(1, 1, 1, 0.4f);
+				GSB.srHud.rect(0, Gdx.graphics.getHeight()/2-100, Gdx.graphics.getWidth(), 150);
+			GSB.srHud.end();
+		
+			GSB.hud.begin();
+			FontManager.get(85).draw(GSB.hud, ""+(int)(begin+1), (1f-(begin-(int)begin))*Gdx.graphics.getWidth(), Gdx.graphics.getHeight()/2);
+			GSB.hud.end();
+		}
 		if(paused)
 		{
 			 Gdx.gl.glEnable(GL20.GL_BLEND);
@@ -256,6 +274,7 @@ public class Game implements Screen
 			GSB.hud.end();
 			
 		}
+		
 		update(delta);
 	}
 	
@@ -276,7 +295,7 @@ public class Game implements Screen
 				lastClick.y = Gdx.input.getY();
 			}
 	
-			cameraScroll += ScrollClass.getScroll()/100f;
+			cameraScroll += ScrollClass.getScroll()/200f;
 			
 			if(Gdx.input.isKeyJustPressed(Input.Keys.M))
 			{
@@ -286,48 +305,53 @@ public class Game implements Screen
 			{
 				debug = !debug;
 			}
-			if(Gdx.input.isKeyPressed(Input.Keys.S))
+			if(begin <= 0)
 			{
-				players.get(0).move(false, delta);
-			}
-			if(Gdx.input.isKeyPressed(Input.Keys.F))
-			{
-				players.get(0).move(true, delta);
-			}
-			if(Gdx.input.isKeyJustPressed(Input.Keys.E))
-			{
-				players.get(0).jump();
-			}
-			if(Gdx.input.isKeyPressed(Input.Keys.SPACE))
-			{
-				players.get(0).fire();
-			}
-			
-			if(!IA)
-			{
+				if(Gdx.input.isKeyPressed(Input.Keys.S))
+				{
+					players.get(0).move(false, delta);
+				}
+				if(Gdx.input.isKeyPressed(Input.Keys.F))
+				{
+					players.get(0).move(true, delta);
+				}
+				if(Gdx.input.isKeyJustPressed(Input.Keys.E))
+				{
+					players.get(0).jump();
+				}
+				if(Gdx.input.isKeyPressed(Input.Keys.SPACE))
+				{
+					players.get(0).fire();
+				}
 				
-				if(Gdx.input.isKeyPressed(Input.Keys.LEFT))
+				if(!IA)
 				{
-					players.get(1).move(false, delta);
+					
+					if(Gdx.input.isKeyPressed(Input.Keys.LEFT))
+					{
+						players.get(1).move(false, delta);
+					}
+					if(Gdx.input.isKeyPressed(Input.Keys.RIGHT))
+					{
+						players.get(1).move(true, delta);
+					}
+					if(Gdx.input.isKeyJustPressed(Input.Keys.UP))
+					{
+						players.get(1).jump();
+					}
+					if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_RIGHT) || Gdx.input.isKeyPressed(Input.Keys.ENTER))
+					{
+						players.get(1).fire();
+					}
 				}
-				if(Gdx.input.isKeyPressed(Input.Keys.RIGHT))
+				else
 				{
-					players.get(1).move(true, delta);
-				}
-				if(Gdx.input.isKeyJustPressed(Input.Keys.UP))
-				{
-					players.get(1).jump();
-				}
-				if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_RIGHT) || Gdx.input.isKeyPressed(Input.Keys.ENTER))
-				{
-					players.get(1).fire();
+					theDevil.update(players.get(1), players.get(0), delta);
 				}
 			}
-			else
-			{
-				theDevil.update(players.get(1), players.get(0), delta);
+			else {
+				begin -= delta;
 			}
-			
 			players.get(0).testWeapon(players.get(1), delta);
 			players.get(1).testWeapon(players.get(0), delta);
 			
