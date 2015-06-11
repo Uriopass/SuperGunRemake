@@ -26,8 +26,6 @@ public class AI
 		{
 			float x = pers.getX();
 			
-			System.out.println(x + " "+  p.getX());
-			
 			if(x > p.getX() && x < p.getX()+256)
 			{
 				return false;

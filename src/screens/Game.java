@@ -18,13 +18,16 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.ScreenUtils;
 
 import data.ColorManager;
 import data.FontManager;
@@ -35,6 +38,15 @@ import data.SpriteManager;
 public class Game implements Screen
 {
 	public static OrthographicCamera camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+	
+	private static Vector3 position = new Vector3(camera.position);
+	public static void resetCamera()
+	{
+		camera.position.x = position.x;
+		camera.position.y = position.y;
+		
+		camera.zoom = 1;
+	}
 	
 	Map m = new Map();
 	Animation anim;
@@ -50,6 +62,8 @@ public class Game implements Screen
 	BigButton resume, exit;
 	
 	boolean paused = false;
+	
+	
 	
 	public static void initCameraAndGSB()
 	{
@@ -160,7 +174,7 @@ public class Game implements Screen
 		{
 			protected void onClick() 
 			{
-				Game.camera.zoom = 1;
+				Game.resetCamera();
 				GSB.update(Game.camera);
 				((com.badlogic.gdx.Game)Gdx.app.getApplicationListener()).setScreen(new MainMenu());
 			};
@@ -200,6 +214,7 @@ public class Game implements Screen
 	
 	float fps = 0;
 	int frames = 0;
+	long temps = 0;
 	@Override
 	public void render(float delta)
 	{
@@ -212,7 +227,7 @@ public class Game implements Screen
 			frames = 0;
 		}
 		if(forcedMatrix || JITMatrix)
-			delta /= 3;
+			delta /= 5;
 		JITMatrix = false;
 		for(Personnage p : players)
 		{
@@ -222,6 +237,8 @@ public class Game implements Screen
 			}
 		}
 		time += delta;
+		
+		
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT | (Gdx.graphics.getBufferFormat().coverageSampling?GL20.GL_COVERAGE_BUFFER_BIT_NV:0));
 
@@ -240,13 +257,13 @@ public class Game implements Screen
 				p.render();
 		GSB.sb.end();
 		
+
 		for(Personnage p : players)
 			p.renderUI();
 		if(debug)
 		{
 			players.get(0).renderCollision();
 		}
-		
 		if(begin > 0)
 		{
 			GSB.srHud.begin(ShapeType.Filled);
@@ -260,6 +277,7 @@ public class Game implements Screen
 			FontManager.get(85).draw(GSB.hud, ""+(int)(begin+1), (1f-(begin-(int)begin))*Gdx.graphics.getWidth(), Gdx.graphics.getHeight()/2);
 			GSB.hud.end();
 		}
+		
 		if(paused)
 		{
 			 Gdx.gl.glEnable(GL20.GL_BLEND);
@@ -274,10 +292,9 @@ public class Game implements Screen
 			GSB.hud.end();
 			
 		}
-		
+
 		update(delta);
 	}
-	
 	public void update(float delta)
 	{
 		if(!paused)
@@ -380,12 +397,9 @@ public class Game implements Screen
 			exit.update();
 		}
 		
-		log.log();
-		
 		camera.update();
 		GSB.update(camera);
 	}
-	FPSLogger log = new FPSLogger();
 	float cameraScroll = 0;
 	private void computeCamera(float delta)
 	{

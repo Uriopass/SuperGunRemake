@@ -40,5 +40,6 @@ public class TodoList
 	 * - Bullets disappear on edges [FIXED]
 	 * - Weirdo double jump [DONE]
 	 * - Weapons position [DONE]
+	 * - Weird falling on edge [TO DO]
 	 */
 }

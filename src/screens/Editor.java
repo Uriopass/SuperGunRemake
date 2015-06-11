@@ -75,7 +75,7 @@ public class Editor implements Screen
 			protected void onClick() 
 			{
 				Gdx.input.setCursorImage(null, 0, 0);
-				Game.camera.zoom = 1;
+				Game.resetCamera();
 				GSB.update(Game.camera);
 				((com.badlogic.gdx.Game)Gdx.app.getApplicationListener()).setScreen(new MapMenu());
 			};

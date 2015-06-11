@@ -50,6 +50,7 @@ public class Personnage
 	/**
 	 * direction : True for right and false for left
 	 */
+	
 	boolean direction = false;
 	float time, count;
 	int speed = 23;
