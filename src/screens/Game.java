@@ -17,17 +17,16 @@ import boxs.WorldBoxs;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.math.collision.BoundingBox;
 
 import data.ColorManager;
 import data.FontManager;
@@ -52,12 +51,14 @@ public class Game implements Screen
 	Animation anim;
 	ArrayList<Personnage> players;
 	
-	Sprite background;
+	Sprite background, slowed;
 	float originX, originY;
 	WorldBoxs boxs;
 	public static boolean debug = false;
 	boolean IA = Options.IAActivated;
 	AI theDevil;
+	
+	Music music;
 	
 	BigButton resume, exit;
 	
@@ -81,10 +82,15 @@ public class Game implements Screen
 		
 		camera.zoom = 2.5f;
 		
+		music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
+		music.setLooping(true);
+		if(Options.musicActivated)
+			music.play();
 		boxs = new WorldBoxs();
 		camera.zoom = 5f;
 		
 		background = SpriteManager.get("sky.png");
+		slowed = SpriteManager.get("slowed.png");
 		
 		float centerx = background.getWidth()/2;
 		float centery = background.getHeight()/2;
@@ -93,6 +99,8 @@ public class Game implements Screen
 		originX = Gdx.graphics.getWidth()/2 - centerx;
 		originY = Gdx.graphics.getHeight()/2 - centery;
 		background.setPosition(originX, originY);
+		slowed.setCenterX(Gdx.graphics.getWidth()/2);
+		slowed.setY(Gdx.graphics.getHeight()-slowed.getHeight());
 		
 		m =  MapManager.load(mapName);
 		m.computeTypes();
@@ -111,7 +119,6 @@ public class Game implements Screen
 		m.computeTypes();
 		*/
 		//MapManager.save(m.getCoords(), "test");
-		
 		float minY = 1000000000, maxy = -10000000;
 		float minx = 1000000000, maxx = -10000000;
 		for(Block c : m.getBlocks())
@@ -176,6 +183,7 @@ public class Game implements Screen
 			{
 				Game.resetCamera();
 				GSB.update(Game.camera);
+				music.stop();
 				((com.badlogic.gdx.Game)Gdx.app.getApplicationListener()).setScreen(new MainMenu());
 			};
 		};
@@ -207,14 +215,22 @@ public class Game implements Screen
 	Point lastClick = new Point(0, 0);
 
 	float time = 0;
-	boolean forcedMatrix = false;
-	boolean JITMatrix = false;
+	static boolean forcedMatrix = false;
+	static float JITMatrix = 0;
 	
 	float begin = 3;
 	
 	float fps = 0;
 	int frames = 0;
 	long temps = 0;
+	
+	public static boolean isGameSlowed()
+	{
+		return forcedMatrix || JITMatrix > 0;
+	}
+	
+	boolean wait = false;
+	
 	@Override
 	public void render(float delta)
 	{
@@ -223,19 +239,31 @@ public class Game implements Screen
 		if(fps > 1)
 		{
 			fps = 0;
-			Gdx.graphics.setTitle("Supergun : "+frames);
+			Gdx.graphics.setTitle("Supergun Arena : "+frames);
 			frames = 0;
 		}
-		if(forcedMatrix || JITMatrix)
+		JITMatrix -= delta;
+		if(isGameSlowed())
 			delta /= 5;
-		JITMatrix = false;
-		for(Personnage p : players)
+		if(JITMatrix < 0)
 		{
-			if(Math.abs(p.getVx()) > 90)
+			JITMatrix = 0;
+		}
+		int count = 0;
+		for(Personnage  p : players)
+		{
+			if(Math.abs(p.getVx()) > 90 && wait == false && JITMatrix == 0)
 			{
-				JITMatrix  = true;
+				JITMatrix = 1f;
+				wait = true;
+			}
+			if(Math.abs(p.getVx()) < 90)
+			{
+				count++;
 			}
 		}
+		if(count == players.size())
+			wait = false;
 		time += delta;
 		
 		
@@ -254,7 +282,7 @@ public class Game implements Screen
 		GSB.sb.begin();
 			boxs.render();
 			for(Personnage p : players)
-				p.render();
+				p.render(delta);
 		GSB.sb.end();
 		
 
@@ -274,7 +302,21 @@ public class Game implements Screen
 			GSB.srHud.end();
 		
 			GSB.hud.begin();
-			FontManager.get(85).draw(GSB.hud, ""+(int)(begin+1), (1f-(begin-(int)begin))*Gdx.graphics.getWidth(), Gdx.graphics.getHeight()/2);
+			float ratio = (begin - (int)begin)*2 - 1;
+			float xratio = ratio * ratio;
+			if(ratio < 0)
+				xratio = -xratio;
+			xratio/=2;
+			xratio += .5f;
+			FontManager.get(85).draw(GSB.hud, ""+(int)(begin+1), xratio*Gdx.graphics.getWidth(), Gdx.graphics.getHeight()/2);
+			GSB.hud.end();
+		}
+
+		
+		if(isGameSlowed())
+		{
+			GSB.hud.begin();
+				slowed.draw(GSB.hud, 0.7f);
 			GSB.hud.end();
 		}
 		
@@ -294,6 +336,7 @@ public class Game implements Screen
 		}
 
 		update(delta);
+		theDevil.renderPath();
 	}
 	public void update(float delta)
 	{
@@ -369,6 +412,11 @@ public class Game implements Screen
 			else {
 				begin -= delta;
 			}
+			
+			
+			music.setVolume(1f);
+			
+			
 			players.get(0).testWeapon(players.get(1), delta);
 			players.get(1).testWeapon(players.get(0), delta);
 			
@@ -420,7 +468,7 @@ public class Game implements Screen
 		
 		lerp = 0.03f;
 		
-		camera.zoom += cameraScroll + (2.5f + ((Options.ParkourActivated)?3:0) + (float)(distance/(Gdx.graphics.getWidth())) - camera.zoom) * lerp * delta * 60;
+		camera.zoom += cameraScroll + (2.5f + ((Options.parkourActivated)?3:0) + (float)(distance/(Gdx.graphics.getWidth())) - camera.zoom) * lerp * delta * 60;
 		
 		camera.zoom = Math.round(camera.zoom*1000)/1000f;
 		
@@ -442,6 +490,7 @@ public class Game implements Screen
 
 	public void dispose()
 	{
+		music.dispose();
 	}
 
 	public void show()

@@ -4,6 +4,24 @@ public class TodoList
 {
 	/**
 	 * Features : 
+	 * - ENTITIES manager --> far better
+	 * 
+	 * - Melee weapon
+	 * - weapon recoil
+	 * - More customizable mode
+	 * --> Different players
+	 * --> End of the game
+	 * --> Handicap
+	 * --> Advanced options with weapons enabled, bonus freqency...
+	 * - better AI
+	 * - key bindings
+	 * - Other blocks
+	 * --> Refactor of blocks in editor
+	 * - tutorial
+	 * - UI refactor
+	 * 
+	 * 
+	 * 
 	 * --> (DONE] Trololo : http://lablanchisserie.fr/Parissou/SupergunRemake/DoubleIASupergun.gif
 	 * - [DONE] Push enemy mode
 	 * --> [DONE] Horizontal velocity
@@ -38,8 +56,8 @@ public class TodoList
 	 * Bugs : 
 	 * - No normal jump when falling [FIXED]
 	 * - Bullets disappear on edges [FIXED]
-	 * - Weirdo double jump [DONE]
-	 * - Weapons position [DONE]
-	 * - Weird falling on edge [TO DO]
+	 * - Weirdo double jump [FIXED]
+	 * - Weapons position [FIXED]
+	 * - Weird falling on edge [FIXED]
 	 */
 }

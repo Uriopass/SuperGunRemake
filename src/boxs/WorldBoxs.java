@@ -69,6 +69,11 @@ public class WorldBoxs
 			{
 				boxs.add(new RifleBox(getCoord()));
 			}
+			
+			if(Math.random() < BaseballBox.probability)
+			{
+				boxs.add(new BaseballBox(getCoord()));
+			}
 		}
 		
 		for(Box b : boxs)

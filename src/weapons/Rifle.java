@@ -1,5 +1,7 @@
 package weapons;
 
+import data.SoundManager;
+import screens.Game;
 import screens.Options;
 
 public class Rifle extends BulletWeapon
@@ -18,8 +20,23 @@ public class Rifle extends BulletWeapon
 		{
 			this.setDamage(10);
 		}
-		this.setVelocityScale(.8f);
+		this.setVelocityScale(.5f);
 		this.name = "Rifle";
 	}
 
+	@Override
+	public void onFire()
+	{
+		if(Options.soundActivated)
+		{
+			if(Game.isGameSlowed())
+			{
+				SoundManager.get("auto.ogg").play(1, 0.5f, 0);
+			}
+			else
+			{
+				SoundManager.get("auto.ogg").play();
+			}
+		}
+	}
 }

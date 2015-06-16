@@ -40,6 +40,17 @@ public class Coord implements Serializable
 	{
 		return y;
 	}
+	
+	public int X()
+	{
+		return (int)x;
+	}
+	
+	public int Y()
+	{
+		return (int)y;
+	}
+	
 	public void setX(float x)
 	{
 		this.x = x;

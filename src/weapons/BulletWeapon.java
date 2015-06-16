@@ -162,9 +162,9 @@ public class BulletWeapon extends Weapon
 	}
 	
 	@Override
-	public void render()
+	public void render(float delta)
 	{
-		super.render();
+		super.render(delta);
 		for(Bullet b : bullets)
 			b.render();
 	}

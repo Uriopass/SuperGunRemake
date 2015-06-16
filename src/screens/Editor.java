@@ -185,7 +185,7 @@ public class Editor implements Screen
 			save.render(0);
 			exit.render(0);
 			changemode.render(0);
-			if(Options.ParkourActivated)
+			if(Options.parkourActivated)
 			{
 				parkour.render(0);
 			}
@@ -321,7 +321,7 @@ public class Editor implements Screen
 		save.update();
 		exit.update();
 		changemode.update();
-		if(Options.ParkourActivated)
+		if(Options.parkourActivated)
 			parkour.update();
 		Game.camera.zoom += ScrollClass.getScroll()/5f;
 		Game.camera.update();

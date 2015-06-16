@@ -2,16 +2,20 @@ package ui_buttons;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 
 import data.FontManager;
 import data.GSB;
+import data.SoundManager;
 import data.TextureManager;
 
 public class BigButton
 {
 	String name;
 	ButtonType position = ButtonType.NONE;
+
+	Sound clicked;
 	
 	int x = 0, originalY = 0, drawy;
 	int width, height;
@@ -22,6 +26,7 @@ public class BigButton
 		width = 200;
 		height = 50;
 		gl.setText(FontManager.get(20), name);
+		clicked = SoundManager.get("askbutton.wav");
 	}
 	GlyphLayout gl = new GlyphLayout();
 	public void render(int scroll)
@@ -97,6 +102,7 @@ public class BigButton
 			{
 				this.position = ButtonType.CLICK;
 				onClick();
+				clicked.play(1, .5f, 0);
 			}
 			else
 			{
@@ -109,11 +115,6 @@ public class BigButton
 		}
 	}
 	
-	protected void onClick()
-	{
-		
-	}
-
 	public int getHeight()
 	{
 		return height;
@@ -122,5 +123,10 @@ public class BigButton
 	public int getWidth()
 	{
 		return width;
+	}
+
+	protected void onClick()
+	{
+		
 	}
 }

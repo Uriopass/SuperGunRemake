@@ -48,7 +48,7 @@ public class Weapon
 		this.ammo = maxAmmo;
 	}
 	
-	public void render()
+	public void render(float delta)
 	{
 		Texture text = TextureManager.get(path);
 		if(owner.getDirection())

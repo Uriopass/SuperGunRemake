@@ -1,8 +1,7 @@
 package screens;
 
-import java.awt.Point;
-
 import ui_buttons.BigButton;
+import ui_buttons.OptionsButton;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -15,72 +14,56 @@ public class Options implements Screen
 	public static boolean ammoActivated = false;
 	public static boolean brawlModeActivated = true;
 	public static boolean IAActivated = false;
-	public static boolean ParkourActivated = false;
-	BigButton ammo, brawl, IA, parkour, exit;
+	public static boolean parkourActivated = false;
+	public static boolean musicActivated = true;
+	public static boolean soundActivated = true;
+	OptionsButton ammo, brawl, IA, parkour, music, sound;
+	BigButton exit;
 	
 	public Options()
 	{
-		ammo = new BigButton(ammoActivated?"Disable ammo":"Enable ammo")
-		{
-			@Override
-			protected void onClick()
-			{
-				ammoActivated = !ammoActivated;
-				this.setName(ammoActivated?"Disable ammo":"Enable ammo");
-			}
-		};
-		ammo.setLocation(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2+100);
-		ammo.center(true, false);
+		ammo = new OptionsButton("Ammo : ");
+		ammo.setLocation(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2+200);
+		ammo.setActivated(ammoActivated);
 		
-		brawl = new BigButton(brawlModeActivated?"Disable brawl":"Enable brawl")
-		{
-			@Override
-			protected void onClick()
-			{
-				brawlModeActivated = !brawlModeActivated;
-				this.setName(brawlModeActivated?"Disable brawl":"Enable brawl");
-			}
-		};
-		brawl.setLocation(ammo.getX(), ammo.getY()-ammo.getHeight());
-		IA = new BigButton(IAActivated?"Disable IA":"Enable IA")
-		{
-			@Override
-			protected void onClick()
-			{
-				IAActivated = !IAActivated;
-				this.setName(IAActivated?"Disable IA":"Enable IA");
-			}
-		};
-		IA.setLocation(brawl.getX(), brawl.getY()-brawl.getHeight());
+		brawl = new OptionsButton("Brawl : ");
+		brawl.setLocation(ammo.getX(), ammo.getY()-ammo.getHeight()*2);
+		brawl.setActivated(brawlModeActivated);
 		
-		parkour = new BigButton(ParkourActivated?"Disable Parkour":"Enable Parkour")
-		{
-			@Override
-			protected void onClick()
-			{
-				ParkourActivated = !ParkourActivated;
-				if(ParkourActivated)
-					IAActivated = false;
-				
-				this.setName(ParkourActivated?"Disable Parkour":"Enable Parkour");
-			}
-		};
-		parkour.setLocation(IA.getX(), IA.getY()-IA.getHeight());
+		IA = new OptionsButton("AI : ");
+		IA.setLocation(brawl.getX(), brawl.getY()-brawl.getHeight()*2);
+		IA.setActivated(IAActivated);
+		
+		parkour = new OptionsButton("Parkour : ");
+		parkour.setLocation(IA.getX(), IA.getY()-IA.getHeight()*2);
+		parkour.setActivated(parkourActivated);
+		
+		music = new OptionsButton("Music : ");
+		music.setLocation((Gdx.graphics.getWidth()*3)/4, brawl.getY());
+		music.setActivated(musicActivated);
+		
+		sound = new OptionsButton("Sound : ");
+		sound.setLocation(music.getX(), music.getY()-music.getHeight()*2);
+		sound.setActivated(soundActivated);
 		
 		exit = new BigButton("Back to main menu")
 		{
 			@Override
 			protected void onClick()
 			{
+				ammoActivated = ammo.getValue();
+				brawlModeActivated = brawl.getValue();
+				IAActivated = IA.getValue();
+				parkourActivated = parkour.getValue();
+				musicActivated = music.getValue();
+				soundActivated = sound.getValue();
+				
 				((com.badlogic.gdx.Game)Gdx.app.getApplicationListener()).setScreen(new MainMenu());
 			}
 		};
-		exit.setLocation(parkour.getX(), parkour.getY()-parkour.getHeight()*2);
-		
-		
+		exit.setLocation(Gdx.graphics.getWidth()/2, parkour.getY()-parkour.getHeight()*2);
+		exit.center(true, false);
 	}
-	
-	Point lastClick = new Point(0, 0);
 	
 	@Override
 	public void render(float delta)
@@ -88,11 +71,13 @@ public class Options implements Screen
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		GSB.hud.begin();
-			ammo.render(0);
-			brawl.render(0);
+			ammo.render();
+			brawl.render();
 			exit.render(0);
-			IA.render(0);
-			parkour.render(0);
+			IA.render();
+			parkour.render();
+			music.render();
+			sound.render();
 		GSB.hud.end();
 		
 		update(delta);
@@ -105,6 +90,8 @@ public class Options implements Screen
 		IA.update();
 		exit.update();
 		parkour.update();
+		music.update();
+		sound.update();
 	}
 	@Override
 	public void show()

@@ -7,7 +7,9 @@ import map.Map;
 import particles.ParticleEmitter;
 import screens.Game;
 import screens.Options;
+import weapons.BaseballBat;
 import weapons.BulletWeapon;
+import weapons.MeleeWeapon;
 import weapons.Pistol;
 import weapons.Weapon;
 import boxs.Box;
@@ -72,7 +74,7 @@ public class Personnage
 	
 	ArrayList<Block> map;
 	
-	Rectangle hitbox = new Rectangle(x + 23, y + 3, 55, 105);
+	Rectangle hitbox = new Rectangle(x + 23, y + 3, 55, 125);
 	
 	Weapon weapon;
 	
@@ -82,6 +84,8 @@ public class Personnage
 	
 	float weaponNameActual = 0;
 	float weaponNameTime = 1;
+	
+	
 	
 	public Personnage(int id, int dieY)
 	{
@@ -128,7 +132,7 @@ public class Personnage
 		this.enemy = ennemy;
 	}
 	
-	public void render()
+	public void render(float delta)
 	{
 		blood.render();
 		if(jumping)
@@ -143,7 +147,7 @@ public class Personnage
 		{
 			GSB.sb.draw(sprite.getKeyFrame(0f), x, y);
 		}
-		weapon.render();
+		weapon.render(delta);
 		
 		if(weaponNameActual > 0)
 		{
@@ -242,6 +246,7 @@ public class Personnage
 				((BulletWeapon) newweapon).transfer((BulletWeapon) weapon);
 			}
 		}
+		
 		this.weapon = newweapon;
 	}
 	
@@ -334,6 +339,7 @@ public class Personnage
 			{
 				vx = 0;
 			}
+
 		}
 		if(onGround())
 		{
@@ -343,6 +349,11 @@ public class Personnage
 		else
 		{
 			realAcceleration = acceleration;
+			if(!jumping)
+			{
+				vy = 0;
+				jumping = true;
+			}
 		}
 		moving = (vx != 0);
 		count += delta;
@@ -362,9 +373,9 @@ public class Personnage
 				respawn();
 			}
 		}
-		if(!onGround() || jumping)
+		if(jumping)
 		{
-			vy -= gravity*(delta*60);
+			setVy(vy - gravity*delta*60);
 			y += vy*delta*60;
 			if(collision())
 			{
@@ -385,7 +396,7 @@ public class Personnage
 							max = collidedPoly.getTransformedVertices()[i];
 					y = max-2.3f;
 				}
-				vy = 0;
+				setVy(0);
 			}
 			else
 			{
@@ -404,7 +415,7 @@ public class Personnage
 	
 		weapon.update(delta);
 	}
-
+	
 	public boolean onGround()
 	{
 		hitbox.setPosition(x + 20, y-2);
@@ -603,6 +614,14 @@ public class Personnage
 				casted.fire();
 			}
 		}
+		if(weapon instanceof MeleeWeapon)
+		{
+			MeleeWeapon casted = (MeleeWeapon) weapon;
+			if(!casted.isSwinging())
+			{
+				casted.swing();
+			}
+		}
 	}
 	
 	public void renderCollision()
@@ -625,7 +644,7 @@ public class Personnage
 	{
 		if(Game.debug)
 		{
-			vy = jumpspeed;
+			setVy(jumpspeed);
 			jumping = true;
 			return;
 		}
@@ -633,7 +652,7 @@ public class Personnage
 		{
 			jumps--;
 			jumping = true;
-			vy = jumpspeed;
+			setVy(jumpspeed);
 		}
 	}
 	
@@ -705,6 +724,16 @@ public class Personnage
 	public void setVx(float vx)
 	{
 		this.vx = vx;
+	}
+
+	public float getVy()
+	{
+		return vy;
+	}
+
+	public void setVy(float vy)
+	{
+		this.vy = vy;
 	}
 
 	public int getDieY()
