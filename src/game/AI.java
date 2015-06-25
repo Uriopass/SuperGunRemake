@@ -1,8 +1,6 @@
 package game;
 
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 
 import map.Block;
 import map.Map;
@@ -251,6 +249,7 @@ public class AI
 		return p;
 	}
 	
+	@SuppressWarnings("unused")
 	private void smartAI(Personnage me, Personnage enemy, float delta)
 	{
 		lastPath = getPath(convertToGrid(new Coord(me.getX(), me.getY())), convertToGrid(new Coord(enemy.getX(), enemy.getY())));

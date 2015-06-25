@@ -12,7 +12,19 @@ public class BaseballBat extends MeleeWeapon
 		this.setMaxAmmo(0);
 		this.setName("Baseball bat");
 		this.setPadding(28, 12);
-		s.setOrigin(17, 17);
+		setDamage(5);
+		setVelocity(60);
+	}
+	
+	@Override
+	public void render(float delta)
+	{
+		if(owner.getDirection())
+			s.setOrigin(17, 17);
+		else {
+			s.setOrigin(s.getWidth()-17, 17);
+		}
+		super.render(delta);
 	}
 	
 	@Override

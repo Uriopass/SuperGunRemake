@@ -7,16 +7,15 @@ import com.badlogic.gdx.math.Vector2;
 import data.GSB;
 import data.SpriteManager;
 
-public class Bullet
+public class OldBullet
 {
 	float x, y, vx, vy;
 	Rectangle hitbox;
 	int dmg;
 	float angle;
 	Sprite image;
-	String history;
 	
-	public Bullet(float x, float y, float vx, float vy, int dmg)
+	public OldBullet(float x, float y, float vx, float vy, int dmg)
 	{
 		this.dmg = dmg;
 		this.x = x;
@@ -28,11 +27,7 @@ public class Bullet
 		angle = getAngle(vx, vy);
 	}
 	
-	public void inverteVx()
-	{
-		this.vx = -vx;
-		angle = getAngle(vx, vy);
-	}
+	
 	
 	private float getAngle(float vx, float vy)
 	{

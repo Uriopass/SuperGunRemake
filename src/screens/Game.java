@@ -2,6 +2,7 @@ package screens;
 
 import game.AI;
 import game.Personnage;
+import game.WorldEntities;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -24,9 +25,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.BoundingBox;
 
 import data.ColorManager;
 import data.FontManager;
@@ -38,7 +37,7 @@ public class Game implements Screen
 {
 	public static OrthographicCamera camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 	
-	private static Vector3 position = new Vector3(camera.position);
+	private static Vector3 position;
 	public static void resetCamera()
 	{
 		camera.position.x = position.x;
@@ -55,7 +54,7 @@ public class Game implements Screen
 	float originX, originY;
 	WorldBoxs boxs;
 	public static boolean debug = false;
-	boolean IA = Options.IAActivated;
+	boolean IA = Options.get("IA");
 	AI theDevil;
 	
 	Music music;
@@ -64,12 +63,12 @@ public class Game implements Screen
 	
 	boolean paused = false;
 	
-	
+	public WorldEntities we = new WorldEntities();
 	
 	public static void initCameraAndGSB()
 	{
 		camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		
+		position = new Vector3(camera.position);
 		GSB.init(camera);
 		Gdx.input.setInputProcessor(new ScrollClass());
 	}
@@ -84,7 +83,7 @@ public class Game implements Screen
 		
 		music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
 		music.setLooping(true);
-		if(Options.musicActivated)
+		if(Options.get("music"))
 			music.play();
 		boxs = new WorldBoxs();
 		camera.zoom = 5f;
@@ -147,8 +146,8 @@ public class Game implements Screen
 		
 		players = new ArrayList<Personnage>();
 		
-		players.add(new Personnage(0, (int)minY));
-		players.add(new Personnage(1, (int)minY));
+		players.add(new Personnage(0, (int)minY, this));
+		players.add(new Personnage(1, (int)minY, this));
 		players.get(0).setOrigin(m.getGentilPos());
 		players.get(1).setOrigin(m.getMechantPos());
 		players.get(0).setEnnemy(players.get(1));
@@ -156,6 +155,11 @@ public class Game implements Screen
 		
 		players.get(0).setWeapon(new Pistol());
 		players.get(1).setWeapon(new Pistol());
+
+		for(Personnage p : players)
+		{
+			we.addPersonnage(p);
+		}
 		
 		for(Block c : m.getBlocks())
 		{
@@ -285,7 +289,8 @@ public class Game implements Screen
 				p.render(delta);
 		GSB.sb.end();
 		
-
+		we.render();
+		
 		for(Personnage p : players)
 			p.renderUI();
 		if(debug)
@@ -355,7 +360,7 @@ public class Game implements Screen
 				lastClick.y = Gdx.input.getY();
 			}
 	
-			cameraScroll += ScrollClass.getScroll()/200f;
+			cameraScroll += ScrollClass.getScroll()/5f;
 			
 			if(Gdx.input.isKeyJustPressed(Input.Keys.M))
 			{
@@ -413,6 +418,7 @@ public class Game implements Screen
 				begin -= delta;
 			}
 			
+			we.update(delta);
 			
 			music.setVolume(1f);
 			
@@ -468,7 +474,7 @@ public class Game implements Screen
 		
 		lerp = 0.03f;
 		
-		camera.zoom += cameraScroll + (2.5f + ((Options.parkourActivated)?3:0) + (float)(distance/(Gdx.graphics.getWidth())) - camera.zoom) * lerp * delta * 60;
+		camera.zoom += (cameraScroll + 2.5f + ((Options.get("parkour"))?3:0) + (float)(distance/(Gdx.graphics.getWidth())) - camera.zoom) * lerp * delta * 60;
 		
 		camera.zoom = Math.round(camera.zoom*1000)/1000f;
 		

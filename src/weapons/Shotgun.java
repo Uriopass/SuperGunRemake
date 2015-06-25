@@ -8,6 +8,7 @@ import screens.Options;
 import com.badlogic.gdx.graphics.Texture;
 
 import data.SoundManager;
+import entities.Bullet;
 
 public class Shotgun extends BulletWeapon
 {
@@ -22,20 +23,20 @@ public class Shotgun extends BulletWeapon
 		this.setMaxAmmo(35);
 		this.setVelocity(30);
 		this.setDamage(3);
-		if(!Options.brawlModeActivated)
+		if(!Options.get("brawl"))
 		{
 			this.setDamage(7);
 		}
-		this.setVelocityScale(1.2f);
+		this.setVelocityScale(.7f);
 	}
 
 	@Override
 	protected ArrayList<Bullet> getFiredBullets(Texture text)
 	{
 		ArrayList<Bullet> fired = new ArrayList<Bullet>();
-		fired.add(new Bullet(owner.getX() + paddingx, owner.getY() + paddingy + text.getHeight() / 2 + 5, velocity, 5, damage));
-		fired.add(new Bullet(owner.getX() + paddingx, owner.getY() + paddingy + text.getHeight() / 2 + 5, velocity, 0, damage));
-		fired.add(new Bullet(owner.getX() + paddingx, owner.getY() + paddingy + text.getHeight() / 2 + 5, velocity, -5, damage));
+		fired.add(new Bullet(owner.getX() + paddingx, owner.getY() + paddingy + text.getHeight() / 2 + 5, velocity, 5, damage, velocityScale));
+		fired.add(new Bullet(owner.getX() + paddingx, owner.getY() + paddingy + text.getHeight() / 2 + 5, velocity, 0, damage, velocityScale));
+		fired.add(new Bullet(owner.getX() + paddingx, owner.getY() + paddingy + text.getHeight() / 2 + 5, velocity, -5, damage, velocityScale));
 		return fired;
 	}
 
@@ -48,7 +49,7 @@ public class Shotgun extends BulletWeapon
 	@Override
 	public void onFire()
 	{
-		if(Options.soundActivated)
+		if(Options.get("sound"))
 		{
 			if(Game.isGameSlowed())
 			{

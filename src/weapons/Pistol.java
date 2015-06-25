@@ -15,7 +15,7 @@ public class Pistol extends BulletWeapon
 		this.setMaxAmmo(1);
 		this.setVelocity(40);
 		this.setDamage(5);
-		if(!Options.brawlModeActivated)
+		if(!Options.get("brawl"))
 		{
 			this.setDamage(15);
 		}
@@ -32,7 +32,7 @@ public class Pistol extends BulletWeapon
 	@Override
 	public void onFire()
 	{
-		if(Options.soundActivated)
+		if(Options.get("sound"))
 		{
 			if(Game.isGameSlowed())
 			{

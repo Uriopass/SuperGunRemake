@@ -16,7 +16,6 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.utils.Align;
 
-import data.Coord;
 import data.FontManager;
 import data.GSB;
 
@@ -26,7 +25,7 @@ public class MainMenu implements Screen
 	ArrayList<ParticleEmitter> pe = new ArrayList<ParticleEmitter>();
 	ParticleEmitter mouse;
 	
-	String version = "0.9", downloadedVersion = "ERROR";
+	String version = "0.92", downloadedVersion = "ERROR";
 	BigButton update, doNotUpdate;
 	
 	boolean updateMenu = false;

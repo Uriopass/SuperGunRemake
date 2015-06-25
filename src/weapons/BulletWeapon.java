@@ -1,33 +1,25 @@
 package weapons;
 
-import game.Personnage;
-
 import java.util.ArrayList;
 
-import screens.Game;
 import screens.Options;
 
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.Intersector;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 
 import data.TextureManager;
+import entities.Bullet;
 
 public class BulletWeapon extends Weapon
 {
-
 	int fireRate = 3;
 	float lastFire = 0;
 	int damage, velocity;
 	static int minX, maxX;
 	float velocityScale = 1.5f;
 	
-	ArrayList<Bullet> bullets;
 	public BulletWeapon()
 	{
 		super();
-		bullets = new ArrayList<Bullet>();
 	}
 	public void setRate(int rate)
 	{
@@ -58,18 +50,6 @@ public class BulletWeapon extends Weapon
 		return lastFire <= 0;
 	}
 	
-	public void transfer(BulletWeapon other)
-	{
-		for(Bullet b : other.bullets)
-		{
-			bullets.add(b);
-		}
-		if(other.name == this.name)
-		{
-			this.lastFire = other.lastFire;
-		}
-	}
-	
 	public void setDamage(int damage)
 	{
 		this.damage = damage;
@@ -84,7 +64,7 @@ public class BulletWeapon extends Weapon
 	{
 		lastFire = fireRate;
 		Texture text = TextureManager.get(path);
-		if(Options.ammoActivated)
+		if(Options.get("ammo"))
 		{
 			setAmmo(ammo - 1);;
 		}
@@ -99,9 +79,10 @@ public class BulletWeapon extends Weapon
 				if(!owner.getDirection())
 				{
 					b.inverteVx();
-					b.x -= owner.getHitbox().width + text.getWidth() - 20;
+					b.setX(b.getX() - (owner.getHitbox().width + text.getWidth() - 20));
 				}
-				bullets.add(b);
+				owner.g.we.addEntity(b);
+				
 				onFire();
 			}
 		}
@@ -110,26 +91,8 @@ public class BulletWeapon extends Weapon
 	protected ArrayList<Bullet> getFiredBullets(Texture text)
 	{
 		ArrayList<Bullet> toShoot = new ArrayList<Bullet>();
-		toShoot.add(new Bullet(owner.getX()+paddingx, owner.getY() + paddingy + text.getHeight()/2 + 5, velocity, 0, damage));
+		toShoot.add(new Bullet(owner.getX()+paddingx, owner.getY() + paddingy + text.getHeight()/2 + 5, velocity, 0, damage, velocityScale));
 		return toShoot;
-	}
-	
-
-	public void updateBulletCollision()
-	{
-		for(int i = 0 ; i < bullets.size() ; i++)
-		{
-			Vector2[] hit = bullets.get(i).getCollision(1/60f);
-			for(int j = 0 ; j < owner.getCollisions().size() ; j++)
-			{
-				if(owner.getCollisions().get(j).contains(hit[0].x, hit[0].y))
-				{
-					bullets.remove(i);
-					i--;
-					break;
-				}
-			}
-		}
 	}
 	
 	boolean once;
@@ -145,90 +108,6 @@ public class BulletWeapon extends Weapon
 		{
 			once = false;
 			onReload();
-		}
-		
-		for(int i = 0 ; i < bullets.size() ; i++)
-		{
-			Bullet b = bullets.get(i);
-			b.update(delta);
-			if(b.x < minX || b.x > maxX)
-			{
-				bullets.remove(i);
-				i--;
-			}
-		}
-		
-		updateBulletCollision();
-	}
-	
-	@Override
-	public void render(float delta)
-	{
-		super.render(delta);
-		for(Bullet b : bullets)
-			b.render();
-	}
-	
-	public boolean isCollision(Vector2[] seg, Rectangle r)
-	{
-		Vector2 a, b;
-		a = new Vector2(r.getX(), r.getY());
-		b = new Vector2(r.getX()+r.getWidth(), r.getY());
-		if(Intersector.intersectSegments(seg[0], seg[1], a, b, null))
-		{
-			return true;
-		}
-		b.x = r.getX();
-		b.y = r.getY() + r.getHeight();
-		if(Intersector.intersectSegments(seg[0], seg[1], a, b, null))
-		{
-			return true;
-		}
-		a.x = r.getX() + r.getWidth();
-		a.y = r.getY() + r.getHeight();
-		if(Intersector.intersectSegments(seg[0], seg[1], a, b, null))
-		{
-			return true;
-		}
-		
-		b.x = r.getX() + r.getWidth();
-		b.y = r.getY();
-		if(Intersector.intersectSegments(seg[0], seg[1], a, b, null))
-		{
-			return true;
-		}
-		return false;
-	}
-	
-	@Override
-	public void testHit(Personnage pers, float delta)
-	{
-		for(int i = 0 ; i < bullets.size() ; i++)
-		{
-			Bullet b = bullets.get(i);
-			Vector2[] pos = b.getCollision(delta);
-			
-			float lifemultiplier = 1+4*(100f-pers.getLife())/100f;
-			
-			
-			if(isCollision(pos, pers.getVxHitbox()) || pers.getVxHitbox().contains(pos[0]))
-			{
-				if(pers.isInvicible() || Game.invincible)
-				{
-					pers.addLife(0);
-				}
-				else
-				{
-					pers.addLife(-damage);
-					
-					if(Options.brawlModeActivated)
-					{
-						pers.setVx(pers.getVx()/2 + b.vx*velocityScale*lifemultiplier);
-					}
-				}
-				bullets.remove(i);
-				i--;
-			}
 		}
 	}
 	

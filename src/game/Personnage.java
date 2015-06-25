@@ -7,7 +7,6 @@ import map.Map;
 import particles.ParticleEmitter;
 import screens.Game;
 import screens.Options;
-import weapons.BaseballBat;
 import weapons.BulletWeapon;
 import weapons.MeleeWeapon;
 import weapons.Pistol;
@@ -85,10 +84,12 @@ public class Personnage
 	float weaponNameActual = 0;
 	float weaponNameTime = 1;
 	
+	public Game g;
 	
 	
-	public Personnage(int id, int dieY)
+	public Personnage(int id, int dieY, Game g)
 	{
+		this.g = g;
 		this.dieY = dieY;
 		this.id = id;
 		collisions = new ArrayList<Polygon>();
@@ -149,6 +150,12 @@ public class Personnage
 		}
 		weapon.render(delta);
 		
+		if(isInvicible())
+		{
+			Texture shield = TextureManager.get("shield.png");
+			GSB.sb.draw(shield,x + (sprite.getKeyFrame(0).getRegionWidth() - shield.getWidth())/2, y + (sprite.getKeyFrame(0).getRegionHeight() - shield.getHeight())/2);
+		}
+		
 		if(weaponNameActual > 0)
 		{
 			weaponText.setColor(0, 0, 0, weaponNameActual/weaponNameTime);
@@ -169,7 +176,7 @@ public class Personnage
 				GSB.srHud.rect(ui.getX()+64, ui.getY()+93, life*1.5f, 10);
 				GSB.srHud.setColor(1, ((float)0xd0)/0xFF, ((float)0x14)/0xFF, .7f);
 				// Ammo
-				if(Options.ammoActivated)
+				if(Options.get("ammo"))
 				{
 					GSB.srHud.rect(ui.getX()+64, ui.getY()+73, ((float)weapon.getAmmo()/weapon.getMaxAmmo())*150f, 10);
 				}
@@ -182,11 +189,19 @@ public class Personnage
 							GSB.srHud.setColor(.1f, 1f, 0, .7f);
 						GSB.srHud.rect(ui.getX()+64, ui.getY()+73, (1-(float)weapon.getLastFire()/weapon.getFireRate())*150f, 10);
 					}
+					
+					if(weapon instanceof MeleeWeapon)
+					{
+						MeleeWeapon weapon = (MeleeWeapon) this.weapon;
+						if(weapon.wait < 0)
+							GSB.srHud.setColor(.1f, 1f, 0, .7f);
+						GSB.srHud.rect(ui.getX()+64, ui.getY()+73, (1-(float)((weapon.wait > 0)?weapon.wait:0))*150f, 10);
+					}
 				}
 			GSB.srHud.end();
 			GSB.hud.begin();
 				FontManager.get(10).draw(GSB.hud, life+"/100", ui.getX()+120, ui.getY()+101);
-				if(Options.ammoActivated)
+				if(Options.get("ammo"))
 				{
 					FontManager.get(10).draw(GSB.hud, weapon.getAmmo()+"/"+weapon.getMaxAmmo(), ui.getX()+120, ui.getY()+81);
 				}
@@ -205,7 +220,7 @@ public class Personnage
 				GSB.srHud.rect(ui.getX()+178, ui.getY()+93, -(life*1.5f), 10);
 				GSB.srHud.setColor(1, ((float)0xd0)/0xFF, ((float)0x14)/0xFF, .7f);
 				// Ammo
-				if(Options.ammoActivated)
+				if(Options.get("ammo"))
 				{
 					GSB.srHud.rect(ui.getX()+178, ui.getY()+73,-((float)weapon.getAmmo()/weapon.getMaxAmmo())*150f, 10);
 				}
@@ -218,12 +233,20 @@ public class Personnage
 							GSB.srHud.setColor(.1f, 1f, 0, .7f);
 						GSB.srHud.rect(ui.getX()+178, ui.getY()+73, -(1-(float)weapon.getLastFire()/weapon.getFireRate())*150f, 10);
 					}
+					
+					if(weapon instanceof MeleeWeapon)
+					{
+						MeleeWeapon weapon = (MeleeWeapon) this.weapon;
+						if(weapon.wait < 0)
+							GSB.srHud.setColor(.1f, 1f, 0, .7f);
+						GSB.srHud.rect(ui.getX()+178, ui.getY()+73, -(1-(float)((weapon.wait > 0)?weapon.wait:0))*150f, 10);
+					}
 				}
 			GSB.srHud.end();
 
 			GSB.hud.begin();
 				FontManager.get(10).draw(GSB.hud, life+"/100", ui.getX()+85, ui.getY()+101);
-				if(Options.ammoActivated)
+				if(Options.get("ammo"))
 				{
 					FontManager.get(10).draw(GSB.hud, weapon.getAmmo()+"/"+weapon.getMaxAmmo(), ui.getX()+85, ui.getY()+81);
 				}
@@ -238,15 +261,8 @@ public class Personnage
 	public void setWeapon(Weapon newweapon)
 	{
 		weaponNameActual = weaponNameTime;
-		newweapon.setOwner(this);
-		if(newweapon instanceof BulletWeapon)
-		{
-			if(weapon instanceof BulletWeapon)
-			{
-				((BulletWeapon) newweapon).transfer((BulletWeapon) weapon);
-			}
-		}
 		
+		newweapon.setOwner(this);
 		this.weapon = newweapon;
 	}
 	
@@ -332,17 +348,16 @@ public class Personnage
 			moving = false;
 		}
 		
-		if(moving && onGround())
-		{
-			vx = vx + ((vx < 0)?friction:-friction)*delta*60;
-			if(Math.abs(vx) < delta*60*friction)
-			{
-				vx = 0;
-			}
-
-		}
 		if(onGround())
 		{
+			if(moving)
+			{
+				vx = vx + ((vx < 0)?friction:-friction)*delta*60;
+				if(Math.abs(vx) < delta*60*friction)
+				{
+					vx = 0;
+				}
+			}
 			realAcceleration = acceleration*2;
 			jumps = 2;
 		}

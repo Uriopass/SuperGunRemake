@@ -1,5 +1,10 @@
 package screens;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Properties;
+
 import ui_buttons.BigButton;
 import ui_buttons.OptionsButton;
 
@@ -11,52 +16,63 @@ import data.GSB;
 
 public class Options implements Screen
 {
-	public static boolean ammoActivated = false;
-	public static boolean brawlModeActivated = true;
-	public static boolean IAActivated = false;
-	public static boolean parkourActivated = false;
-	public static boolean musicActivated = true;
-	public static boolean soundActivated = true;
 	OptionsButton ammo, brawl, IA, parkour, music, sound;
 	BigButton exit;
 	
+	public static Properties p = new Properties();
 	public Options()
 	{
+		
+		loadProperties();
+		
 		ammo = new OptionsButton("Ammo : ");
 		ammo.setLocation(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2+200);
-		ammo.setActivated(ammoActivated);
+		ammo.setActivated(p.get("ammo").equals("true"));
 		
 		brawl = new OptionsButton("Brawl : ");
 		brawl.setLocation(ammo.getX(), ammo.getY()-ammo.getHeight()*2);
-		brawl.setActivated(brawlModeActivated);
+		brawl.setActivated(p.get("brawl").equals("true"));
 		
 		IA = new OptionsButton("AI : ");
 		IA.setLocation(brawl.getX(), brawl.getY()-brawl.getHeight()*2);
-		IA.setActivated(IAActivated);
+		IA.setActivated(p.get("IA").equals("true"));
 		
 		parkour = new OptionsButton("Parkour : ");
 		parkour.setLocation(IA.getX(), IA.getY()-IA.getHeight()*2);
-		parkour.setActivated(parkourActivated);
+		parkour.setActivated(p.get("parkour").equals("true"));
 		
 		music = new OptionsButton("Music : ");
 		music.setLocation((Gdx.graphics.getWidth()*3)/4, brawl.getY());
-		music.setActivated(musicActivated);
+		music.setActivated(p.get("music").equals("true"));
 		
 		sound = new OptionsButton("Sound : ");
 		sound.setLocation(music.getX(), music.getY()-music.getHeight()*2);
-		sound.setActivated(soundActivated);
+		sound.setActivated(p.get("sound").equals("true"));
 		
 		exit = new BigButton("Back to main menu")
 		{
 			@Override
 			protected void onClick()
 			{
-				ammoActivated = ammo.getValue();
-				brawlModeActivated = brawl.getValue();
-				IAActivated = IA.getValue();
-				parkourActivated = parkour.getValue();
-				musicActivated = music.getValue();
-				soundActivated = sound.getValue();
+				p.setProperty("ammo", ammo.getValue()?"true":"false");
+				p.setProperty("brawl", brawl.getValue()?"true":"false");
+				p.setProperty("IA", IA.getValue()?"true":"false");
+				p.setProperty("parkour", parkour.getValue()?"true":"false");
+				p.setProperty("music", music.getValue()?"true":"false");
+				p.setProperty("sound", sound.getValue()?"true":"false");
+				try
+				{
+					PrintWriter pw = new PrintWriter(Gdx.files.internal("settings.properties").file());
+					pw.write("");
+					pw.close();
+					p.store(new FileOutputStream(Gdx.files.internal("settings.properties").file()), "SupergunArena properties");
+					
+				}
+				catch (IOException e)
+				{
+					e.printStackTrace();
+				}
+				
 				
 				((com.badlogic.gdx.Game)Gdx.app.getApplicationListener()).setScreen(new MainMenu());
 			}
@@ -124,6 +140,41 @@ public class Options implements Screen
 	public void dispose()
 	{
 		
+	}
+
+	private static void loadProperties()
+	{
+		try
+		{
+			if(Gdx.files.internal("settings.properties").exists())
+			{
+				p.load(Gdx.files.internal("settings.properties").read());
+			}
+			else
+			{
+				Gdx.files.internal("settings.properties").file().createNewFile();
+				p.setProperty("ammo", "false");
+				p.setProperty("brawl", "true");
+				p.setProperty("IA", "false");
+				p.setProperty("parkour", "false");
+				p.setProperty("music", "true");
+				p.setProperty("sound", "true");
+				p.store(new FileOutputStream(Gdx.files.internal("settings.properties").file()), "SupergunArena properties");
+			}
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+	public static boolean get(String string)
+	{
+		if(p.get(string) == null)
+		{
+			loadProperties();
+		}
+		return p.get(string).equals("true");
 	}
 	
 }

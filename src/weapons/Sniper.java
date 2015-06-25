@@ -16,7 +16,7 @@ public class Sniper extends BulletWeapon
 		this.setMaxAmmo(15);
 		this.setVelocity(100);
 		this.setDamage(10);
-		if(!Options.brawlModeActivated)
+		if(!Options.get("brawl"))
 		{
 			this.setDamage(35);
 		}
@@ -27,7 +27,7 @@ public class Sniper extends BulletWeapon
 	@Override
 	public void onFire()
 	{
-		if(Options.soundActivated)
+		if(Options.get("sound"))
 		{
 			if(Game.isGameSlowed())
 			{

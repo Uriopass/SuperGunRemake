@@ -47,7 +47,7 @@ public class WorldBoxs
 		if(time > 1)
 		{
 			time -= 1;
-			if(Math.random() < AmmunitionBox.probability && Options.ammoActivated)
+			if(Math.random() < AmmunitionBox.probability && Options.get("ammo"))
 			{
 				boxs.add(new AmmunitionBox(getCoord()));
 			}

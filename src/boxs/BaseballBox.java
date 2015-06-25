@@ -2,7 +2,6 @@ package boxs;
 
 import game.Personnage;
 import weapons.BaseballBat;
-import weapons.Rifle;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
@@ -12,7 +11,7 @@ import data.SpriteManager;
 
 public class BaseballBox extends Box
 {
-	public final static float probability = 0f;
+	public final static float probability = .05f;
 	Sprite baseballpic;
 	public BaseballBox(Coord pos)
 	{
