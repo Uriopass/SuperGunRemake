@@ -1,7 +1,6 @@
 package game;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 
 import com.badlogic.gdx.math.Polygon;
 
@@ -22,18 +21,6 @@ public class WorldEntities
 	public void addEntity(Entity e)
 	{
 		entities.add(e);
-		entities.sort(new Comparator<Entity>() {
-
-			@Override
-			public int compare(Entity o1, Entity o2)
-			{
-				if(o1.id > o2.id)
-					return 1;
-				if(o1.id == o2.id)
-					return 0;
-				return -1;
-			}
-		});
 	}
 	
 	public void addPersonnage(Personnage p)

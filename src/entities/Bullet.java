@@ -17,10 +17,12 @@ public class Bullet extends Entity
 	int dmg;
 	float angle;
 	float velocityScale;
+	int ownerId;
 	
-	public Bullet(float x, float y, float vx, float vy, int dmg, float velocityScale)
+	public Bullet(float x, float y, float vx, float vy, int dmg, float velocityScale, int ownerId)
 	{
 		id = 2;
+		this.ownerId = ownerId;
 		this.dmg = dmg;
 		this.velocityScale = velocityScale;
 		
@@ -37,23 +39,26 @@ public class Bullet extends Entity
 	@Override
 	public void onPlayerHit(Personnage hit)
 	{
-		float lifemultiplier = 1+4*(100f-hit.getLife())/100f;
-		
-		if(hit.isInvicible() || Game.invincible)
+		if(hit.id != ownerId)
 		{
-			hit.addLife(0);
-		}
-		else
-		{
-			hit.addLife(-dmg);
+			float lifemultiplier = 1+4*(100f-hit.getLife())/100f;
 			
-			if(Options.get("brawl"))
+			if(hit.isInvicible() || Game.invincible)
 			{
-				hit.setVx(hit.getVx()/2 + vx*velocityScale*lifemultiplier);
+				hit.addLife(0);
 			}
+			else
+			{
+				hit.addLife(-dmg);
+				
+				if(Options.get("brawl"))
+				{
+					hit.setVx(hit.getVx()/2 + vx*velocityScale*lifemultiplier);
+				}
+			}
+			
+			delete = true;
 		}
-		
-		delete = true;
 	}
 	
 	private float getAngle(float vx, float vy)
@@ -70,6 +75,7 @@ public class Bullet extends Entity
 		setX(getX() + vx*(delta*60));
 		y += vy*(delta*60);
 		lastDelta = delta;
+		
 	}
 	
 	float lastDelta = 0;
@@ -113,7 +119,10 @@ public class Bullet extends Entity
 	@Override
 	public boolean polygonTest(Polygon p)
 	{
-		return p.contains(getX(), y);
+		if(this.vx < 0)
+			return p.contains(x, y);
+		else
+			return p.contains(x + image.getWidth(), y);
 	}
 	
 	@Override

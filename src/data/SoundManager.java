@@ -21,6 +21,7 @@ public class SoundManager
 		{
 			try
 			{
+				
 				sounds.put(filename, Gdx.audio.newSound(Gdx.files.internal(filename)));
 			}
 			catch (Exception e)

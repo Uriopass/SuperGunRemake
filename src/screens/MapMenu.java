@@ -232,6 +232,7 @@ public class MapMenu implements Screen
 			int x = 30, y = Gdx.graphics.getHeight() - 150;
 			if(Gdx.input.justTouched())
 			{
+				String oldSelected = new String(selected);
 				for(String s : maps)
 				{
 					if(new Rectangle(x, y, 200, 100).contains(Gdx.input.getX(), Gdx.graphics.getHeight()-Gdx.input.getY()))
@@ -249,6 +250,10 @@ public class MapMenu implements Screen
 						x = 30;
 						y -= 150;
 					}
+				}
+				if(oldSelected.equals(selected))
+				{
+					start.forceClick();
 				}
 			}
 			

@@ -42,7 +42,7 @@ public class Particle
 		x += vx*delta*60;
 		y += vy*delta*60;
 		
-		vy += gravity;
+		vy += gravity*delta*60;
 	}
 	
 	public void enableGravity(float gravity)

@@ -27,6 +27,7 @@ public class Shotgun extends BulletWeapon
 		{
 			this.setDamage(7);
 		}
+		this.setRecoil(15);
 		this.setVelocityScale(.7f);
 	}
 
@@ -34,9 +35,9 @@ public class Shotgun extends BulletWeapon
 	protected ArrayList<Bullet> getFiredBullets(Texture text)
 	{
 		ArrayList<Bullet> fired = new ArrayList<Bullet>();
-		fired.add(new Bullet(owner.getX() + paddingx, owner.getY() + paddingy + text.getHeight() / 2 + 5, velocity, 5, damage, velocityScale));
-		fired.add(new Bullet(owner.getX() + paddingx, owner.getY() + paddingy + text.getHeight() / 2 + 5, velocity, 0, damage, velocityScale));
-		fired.add(new Bullet(owner.getX() + paddingx, owner.getY() + paddingy + text.getHeight() / 2 + 5, velocity, -5, damage, velocityScale));
+		fired.add(new Bullet(owner.getX() + paddingx, owner.getY() + paddingy + text.getHeight() / 2 + 5, velocity, 5, damage, velocityScale, owner.id));
+		fired.add(new Bullet(owner.getX() + paddingx, owner.getY() + paddingy + text.getHeight() / 2 + 5, velocity, 0, damage, velocityScale, owner.id));
+		fired.add(new Bullet(owner.getX() + paddingx, owner.getY() + paddingy + text.getHeight() / 2 + 5, velocity, -5, damage, velocityScale, owner.id));
 		return fired;
 	}
 

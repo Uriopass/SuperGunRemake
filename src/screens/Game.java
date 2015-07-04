@@ -1,10 +1,8 @@
 package screens;
 
-import game.AI;
 import game.Personnage;
 import game.WorldEntities;
 
-import java.awt.Point;
 import java.util.ArrayList;
 
 import map.Block;
@@ -13,6 +11,7 @@ import ui_buttons.BigButton;
 import ui_buttons.ScrollClass;
 import weapons.BulletWeapon;
 import weapons.Pistol;
+import AI.AI;
 import boxs.WorldBoxs;
 
 import com.badlogic.gdx.Gdx;
@@ -63,6 +62,8 @@ public class Game implements Screen
 	
 	boolean paused = false;
 	
+	static float minx, miny, maxx, maxy;
+	
 	public WorldEntities we = new WorldEntities();
 	
 	public static void initCameraAndGSB()
@@ -104,8 +105,6 @@ public class Game implements Screen
 		m =  MapManager.load(mapName);
 		m.computeTypes();
 		
-		theDevil = new AI(m);
-		
 		boxs.setMap(m);
 		/*
 		m.addBox(new Coord(0,0));
@@ -131,6 +130,11 @@ public class Game implements Screen
 			if(c.getX() > maxx)
 				maxx = c.getX();
 		}
+		Game.minx = minx;
+		Game.miny = minY;
+		Game.maxx = maxx;
+		Game.maxy = maxy;
+		
 		maxy += 10;
 		WorldBoxs.setMaxY(maxy);
 		minY -= 10;
@@ -156,6 +160,10 @@ public class Game implements Screen
 		players.get(0).setWeapon(new Pistol());
 		players.get(1).setWeapon(new Pistol());
 
+
+		theDevil = new AI(m);
+		
+		
 		for(Personnage p : players)
 		{
 			we.addPersonnage(p);
@@ -215,8 +223,6 @@ public class Game implements Screen
 		 Gdx.gl.glEnable(GL20.GL_BLEND);
 		    Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 	}
-
-	Point lastClick = new Point(0, 0);
 
 	float time = 0;
 	static boolean forcedMatrix = false;
@@ -296,6 +302,8 @@ public class Game implements Screen
 		if(debug)
 		{
 			players.get(0).renderCollision();
+
+			theDevil.renderPath();
 		}
 		if(begin > 0)
 		{
@@ -341,24 +349,11 @@ public class Game implements Screen
 		}
 
 		update(delta);
-		theDevil.renderPath();
 	}
 	public void update(float delta)
 	{
 		if(!paused)
 		{
-			if(Gdx.input.isButtonPressed(Input.Buttons.LEFT) && !Gdx.input.justTouched())
-			{
-				camera.translate((lastClick.x - Gdx.input.getX())*camera.zoom, 0);
-				lastClick.x = Gdx.input.getX();
-				camera.translate(0, (Gdx.input.getY() - lastClick.y)*camera.zoom);
-				lastClick.y = Gdx.input.getY();
-			}
-			if(Gdx.input.isButtonPressed(Input.Buttons.LEFT) && Gdx.input.justTouched())
-			{
-				lastClick.x = Gdx.input.getX();
-				lastClick.y = Gdx.input.getY();
-			}
 	
 			cameraScroll += ScrollClass.getScroll()/5f;
 			
@@ -430,11 +425,10 @@ public class Game implements Screen
 	
 			for(Personnage p : players)
 				p.update(delta);
-	
+			
 			computeCamera(delta);
-
 		}
-		
+
 		if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE))
 		{
 			paused = true;
@@ -478,6 +472,26 @@ public class Game implements Screen
 		
 		camera.zoom = Math.round(camera.zoom*1000)/1000f;
 		
+	}
+	
+	public static float getMaxx()
+	{
+		return maxx;
+	}
+	
+	public static float getMaxy()
+	{
+		return maxy;
+	}
+	
+	public static float getMinx()
+	{
+		return minx;
+	}
+	
+	public static float getMiny()
+	{
+		return miny;
 	}
 
 	public void pause()

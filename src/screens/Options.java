@@ -16,7 +16,7 @@ import data.GSB;
 
 public class Options implements Screen
 {
-	OptionsButton ammo, brawl, IA, parkour, music, sound;
+	OptionsButton ammo, brawl, IA, parkour, music, sound, advancedIA;
 	BigButton exit;
 	
 	public static Properties p = new Properties();
@@ -27,27 +27,31 @@ public class Options implements Screen
 		
 		ammo = new OptionsButton("Ammo : ");
 		ammo.setLocation(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2+200);
-		ammo.setActivated(p.get("ammo").equals("true"));
+		ammo.setActivated(get("ammo"));
 		
 		brawl = new OptionsButton("Brawl : ");
 		brawl.setLocation(ammo.getX(), ammo.getY()-ammo.getHeight()*2);
-		brawl.setActivated(p.get("brawl").equals("true"));
+		brawl.setActivated(get("brawl"));
 		
 		IA = new OptionsButton("AI : ");
 		IA.setLocation(brawl.getX(), brawl.getY()-brawl.getHeight()*2);
-		IA.setActivated(p.get("IA").equals("true"));
+		IA.setActivated(get("IA"));
+		
+		advancedIA = new OptionsButton("Advanced AI : ");
+		advancedIA.setLocation(IA.getX(), IA.getY()-IA.getHeight()*2);
+		advancedIA.setActivated(get("advancedIA"));
 		
 		parkour = new OptionsButton("Parkour : ");
-		parkour.setLocation(IA.getX(), IA.getY()-IA.getHeight()*2);
-		parkour.setActivated(p.get("parkour").equals("true"));
+		parkour.setLocation(advancedIA.getX(), advancedIA.getY()-advancedIA.getHeight()*2);
+		parkour.setActivated(get("parkour"));
 		
 		music = new OptionsButton("Music : ");
 		music.setLocation((Gdx.graphics.getWidth()*3)/4, brawl.getY());
-		music.setActivated(p.get("music").equals("true"));
+		music.setActivated(get("music"));
 		
 		sound = new OptionsButton("Sound : ");
 		sound.setLocation(music.getX(), music.getY()-music.getHeight()*2);
-		sound.setActivated(p.get("sound").equals("true"));
+		sound.setActivated(get("sound"));
 		
 		exit = new BigButton("Back to main menu")
 		{
@@ -57,6 +61,7 @@ public class Options implements Screen
 				p.setProperty("ammo", ammo.getValue()?"true":"false");
 				p.setProperty("brawl", brawl.getValue()?"true":"false");
 				p.setProperty("IA", IA.getValue()?"true":"false");
+				p.setProperty("advancedIA", advancedIA.getValue()?"true":"flse");
 				p.setProperty("parkour", parkour.getValue()?"true":"false");
 				p.setProperty("music", music.getValue()?"true":"false");
 				p.setProperty("sound", sound.getValue()?"true":"false");
@@ -91,6 +96,7 @@ public class Options implements Screen
 			brawl.render();
 			exit.render(0);
 			IA.render();
+			advancedIA.render();
 			parkour.render();
 			music.render();
 			sound.render();
@@ -108,6 +114,7 @@ public class Options implements Screen
 		parkour.update();
 		music.update();
 		sound.update();
+		advancedIA.update();
 	}
 	@Override
 	public void show()
@@ -142,6 +149,20 @@ public class Options implements Screen
 		
 	}
 
+
+	private static void forceNewProperties() throws IOException
+	{
+		Gdx.files.internal("settings.properties").file().createNewFile();
+		p.setProperty("ammo", "false");
+		p.setProperty("brawl", "true");
+		p.setProperty("IA", "false");
+		p.setProperty("parkour", "false");
+		p.setProperty("music", "true");
+		p.setProperty("sound", "true");
+		p.setProperty("advancedIA", "false");
+		p.store(new FileOutputStream(Gdx.files.internal("settings.properties").file()), "SupergunArena properties");
+	}
+	
 	private static void loadProperties()
 	{
 		try
@@ -152,14 +173,7 @@ public class Options implements Screen
 			}
 			else
 			{
-				Gdx.files.internal("settings.properties").file().createNewFile();
-				p.setProperty("ammo", "false");
-				p.setProperty("brawl", "true");
-				p.setProperty("IA", "false");
-				p.setProperty("parkour", "false");
-				p.setProperty("music", "true");
-				p.setProperty("sound", "true");
-				p.store(new FileOutputStream(Gdx.files.internal("settings.properties").file()), "SupergunArena properties");
+				forceNewProperties();
 			}
 		}
 		catch (IOException e)
@@ -173,6 +187,17 @@ public class Options implements Screen
 		if(p.get(string) == null)
 		{
 			loadProperties();
+		}
+		if(p.get(string) == null)
+		{
+			try
+			{
+				forceNewProperties();
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
 		}
 		return p.get(string).equals("true");
 	}

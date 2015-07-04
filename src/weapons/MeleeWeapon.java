@@ -26,25 +26,18 @@ public class MeleeWeapon extends Weapon
 	{
 		if(attacking)
 		{
-			if(down)
+			rotate += 2f*delta*Math.PI*2f;
+			if(rotate > Math.PI*2)
 			{
-				rotate += 4f*delta*Math.PI/2f;
-				if(rotate > Math.PI/2)
-					down = false;
-			}
-			else
-			{
-				rotate -= 4f*delta*Math.PI/2f;
-				if(rotate < 0)
-				{
-					rotate = 0;
-					down = true;
-					attacking = false;
-				}
+				attacking = false;
+				rotate = 0;
 			}
 		}
 		else
+		{
+			alreadyhit = false;
 			wait -= delta;
+		}
 		s.setRotation((owner.getDirection()?-1:1) * (float) Math.toDegrees(rotate));
 		s.setPosition(owner.getX()+paddingx+(owner.getDirection()?0:-30), owner.getY()+paddingy);
 		s.setFlip(!owner.getDirection(), false);
@@ -64,7 +57,7 @@ public class MeleeWeapon extends Weapon
 	public void swing()
 	{
 		attacking = true;
-		wait = 1;
+		wait = .4f;
 		
 		onSwing();
 	}
@@ -76,12 +69,14 @@ public class MeleeWeapon extends Weapon
 		s = new Sprite(SpriteManager.get(path));
 	}
 	
-	public float wait = 1f;
+	public float wait = 0f;
 	
 	public boolean isSwinging()
 	{
 		return attacking || wait > 0;
 	}
+	
+	boolean alreadyhit = false;
 	
 	@Override
 	public void testHit(Personnage pers, float delta)
@@ -90,11 +85,22 @@ public class MeleeWeapon extends Weapon
 		{
 			if(s.getBoundingRectangle().overlaps(pers.getHitbox()))
 			{
-				pers.addLife(-dmg);
-				if(owner.getDirection())
-					pers.setVx(velocity);
-				else
-					pers.setVx(-velocity);
+
+				if(!alreadyhit)
+				{
+					alreadyhit = true;
+					pers.addLife(-dmg);
+					int multiplier = 1;
+					
+					if(owner.getDirection())
+						multiplier = 1;
+					else 
+						multiplier = -1;
+					if(rotate > Math.PI)
+						multiplier*=-1;
+					
+					pers.setVx(pers.getVx() + multiplier*velocity);
+				}
 			}
 		}
 	}

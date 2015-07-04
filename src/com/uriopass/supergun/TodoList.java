@@ -4,16 +4,17 @@ public class TodoList
 {
 	/**
 	 * Features : 
-	 * - ENTITIES manager --> far better
+	 * - ENTITIES manager [DONE]
+	 * - Melee weapon [DONE]
+	 * - weapon recoil [DONE]
+	 * - better AI [DONE]
 	 * 
-	 * - Melee weapon
-	 * - weapon recoil
 	 * - More customizable mode
 	 * --> Different players
 	 * --> End of the game
 	 * --> Handicap
 	 * --> Advanced options with weapons enabled, bonus freqency...
-	 * - better AI
+	 * 
 	 * - key bindings
 	 * - Other blocks
 	 * --> Refactor of blocks in editor

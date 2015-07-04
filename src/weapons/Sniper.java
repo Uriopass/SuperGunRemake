@@ -20,6 +20,7 @@ public class Sniper extends BulletWeapon
 		{
 			this.setDamage(35);
 		}
+		this.setRecoil(30);
 		this.setVelocityScale(.7f);
 		this.name = "Sniper";
 	}

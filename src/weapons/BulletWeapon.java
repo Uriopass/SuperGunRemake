@@ -16,6 +16,7 @@ public class BulletWeapon extends Weapon
 	int damage, velocity;
 	static int minX, maxX;
 	float velocityScale = 1.5f;
+	float recoil = 10f;
 	
 	public BulletWeapon()
 	{
@@ -43,6 +44,11 @@ public class BulletWeapon extends Weapon
 	{
 		minX = minx;
 		maxX = maxx;
+	}
+	
+	public void setRecoil(float recoil)
+	{
+		this.recoil = recoil;
 	}
 	
 	public boolean canShoot()
@@ -74,6 +80,17 @@ public class BulletWeapon extends Weapon
 		}
 		else
 		{
+			float recoil = this.recoil;
+			if(!owner.onGround())
+				recoil *= .7f;
+			if(owner.getDirection())
+			{
+				owner.setVx(owner.getVx() - recoil);
+			}
+			else 
+			{
+				owner.setVx(owner.getVx() + recoil);
+			}
 			for(Bullet b : getFiredBullets(text))
 			{
 				if(!owner.getDirection())
@@ -91,7 +108,7 @@ public class BulletWeapon extends Weapon
 	protected ArrayList<Bullet> getFiredBullets(Texture text)
 	{
 		ArrayList<Bullet> toShoot = new ArrayList<Bullet>();
-		toShoot.add(new Bullet(owner.getX()+paddingx, owner.getY() + paddingy + text.getHeight()/2 + 5, velocity, 0, damage, velocityScale));
+		toShoot.add(new Bullet(owner.getX()+paddingx, owner.getY() + paddingy + text.getHeight()/2 + 5, velocity, 0, damage, velocityScale, owner.id));
 		return toShoot;
 	}
 	

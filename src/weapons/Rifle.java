@@ -20,6 +20,7 @@ public class Rifle extends BulletWeapon
 		{
 			this.setDamage(10);
 		}
+		this.setRecoil(7);
 		this.setVelocityScale(.5f);
 		this.name = "Rifle";
 	}

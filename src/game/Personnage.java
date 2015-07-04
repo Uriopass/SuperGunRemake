@@ -36,8 +36,9 @@ import data.TextureManager;
 public class Personnage
 {
 	Animation sprite;
-	int id;
-	boolean moving = true, jumping = false;
+	public int id;
+	boolean moving = true;
+	public boolean jumping = false;
 	int originX, originY;
 	
 	ParticleEmitter blood = new ParticleEmitter(0, 0, 8);
@@ -58,9 +59,9 @@ public class Personnage
 	float acceleration = 1.2f;
 	float realAcceleration = acceleration;
 	float friction = .8f;
-	int jumpspeed = 32;
+	int jumpspeed = 34;
 	
-	int jumps = 2;
+	public int jumps = 2;
 	
 	private int dieY;
 	int life = 100;
@@ -195,7 +196,7 @@ public class Personnage
 						MeleeWeapon weapon = (MeleeWeapon) this.weapon;
 						if(weapon.wait < 0)
 							GSB.srHud.setColor(.1f, 1f, 0, .7f);
-						GSB.srHud.rect(ui.getX()+64, ui.getY()+73, (1-(float)((weapon.wait > 0)?weapon.wait:0))*150f, 10);
+						GSB.srHud.rect(ui.getX()+64, ui.getY()+73, (1/.4f)*(.4f-(float)((weapon.wait > 0)?weapon.wait:0))*150f, 10);
 					}
 				}
 			GSB.srHud.end();
@@ -239,7 +240,7 @@ public class Personnage
 						MeleeWeapon weapon = (MeleeWeapon) this.weapon;
 						if(weapon.wait < 0)
 							GSB.srHud.setColor(.1f, 1f, 0, .7f);
-						GSB.srHud.rect(ui.getX()+178, ui.getY()+73, -(1-(float)((weapon.wait > 0)?weapon.wait:0))*150f, 10);
+						GSB.srHud.rect(ui.getX()+178, ui.getY()+73, -(1/.4f)*(.4f-(float)((weapon.wait > 0)?weapon.wait:0))*150f, 10);
 					}
 				}
 			GSB.srHud.end();

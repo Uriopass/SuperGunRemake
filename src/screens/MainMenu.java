@@ -25,7 +25,7 @@ public class MainMenu implements Screen
 	ArrayList<ParticleEmitter> pe = new ArrayList<ParticleEmitter>();
 	ParticleEmitter mouse;
 	
-	String version = "0.92", downloadedVersion = "ERROR";
+	String version = "0.95", downloadedVersion = "ERROR";
 	BigButton update, doNotUpdate;
 	
 	boolean updateMenu = false;
@@ -132,7 +132,6 @@ public class MainMenu implements Screen
 		}
 		update(delta);
 	}
-	float ILIKETRAINS = 0;
 	float speed = 1;
 	int count = 0;
 	private void update(float delta)
@@ -144,7 +143,6 @@ public class MainMenu implements Screen
 		}
 		else
 		{
-			ILIKETRAINS+=.03f*Math.sin(speed);
 			speed+=.01f;
 			play.update();
 			exit.update();
