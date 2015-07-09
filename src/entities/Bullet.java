@@ -1,6 +1,6 @@
 package entities;
 
-import game.Personnage;
+import game.Player;
 import screens.Game;
 import screens.Options;
 
@@ -37,7 +37,7 @@ public class Bullet extends Entity
 	}
 	
 	@Override
-	public void onPlayerHit(Personnage hit)
+	public void onPlayerHit(Player hit)
 	{
 		if(hit.id != ownerId)
 		{
@@ -126,7 +126,7 @@ public class Bullet extends Entity
 	}
 	
 	@Override
-	public boolean playerTest(Personnage p)
+	public boolean playerTest(Player p)
 	{
 		Vector2[] pos = getCollision(lastDelta);
 		

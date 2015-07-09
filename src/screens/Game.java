@@ -1,9 +1,10 @@
 package screens;
 
-import game.Personnage;
+import game.Player;
 import game.WorldEntities;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import map.Block;
 import map.Map;
@@ -47,7 +48,7 @@ public class Game implements Screen
 	
 	Map m = new Map();
 	Animation anim;
-	ArrayList<Personnage> players;
+	ArrayList<Player> players;
 	
 	Sprite background, slowed;
 	float originX, originY;
@@ -148,30 +149,32 @@ public class Game implements Screen
 		maxx *= 256;
 		BulletWeapon.setMinMaxX((int)minx, (int)maxx);
 		
-		players = new ArrayList<Personnage>();
-		
-		players.add(new Personnage(0, (int)minY, this));
-		players.add(new Personnage(1, (int)minY, this));
+		players = new ArrayList<Player>();
+		// TODO change players init
+		players.add(new Player(0, (int)minY, this));
+		players.add(new Player(1, (int)minY, this));
 		players.get(0).setOrigin(m.getGentilPos());
 		players.get(1).setOrigin(m.getMechantPos());
 		players.get(0).setEnnemy(players.get(1));
 		players.get(1).setEnnemy(players.get(0));
 		
-		players.get(0).setWeapon(new Pistol());
-		players.get(1).setWeapon(new Pistol());
+		for(Player p : players)
+		{
+			p.setWeapon(new Pistol());
+		}
 
 
 		theDevil = new AI(m);
 		
 		
-		for(Personnage p : players)
+		for(Player p : players)
 		{
 			we.addPersonnage(p);
 		}
 		
 		for(Block c : m.getBlocks())
 		{
-			for(Personnage p : players)
+			for(Player p : players)
 			{
 				p.addCollision(c);
 			}
@@ -260,7 +263,7 @@ public class Game implements Screen
 			JITMatrix = 0;
 		}
 		int count = 0;
-		for(Personnage  p : players)
+		for(Player  p : players)
 		{
 			if(Math.abs(p.getVx()) > 90 && wait == false && JITMatrix == 0)
 			{
@@ -291,13 +294,13 @@ public class Game implements Screen
 		
 		GSB.sb.begin();
 			boxs.render();
-			for(Personnage p : players)
+			for(Player p : players)
 				p.render(delta);
 		GSB.sb.end();
 		
 		we.render();
 		
-		for(Personnage p : players)
+		for(Player p : players)
 			p.renderUI();
 		if(debug)
 		{
@@ -417,13 +420,20 @@ public class Game implements Screen
 			
 			music.setVolume(1f);
 			
+			for(Player p : players)
+			{
+				for(Player p2 : players)
+				{
+					if(p.id != p2.id)
+					{
+						p.testWeapon(p2, delta);
+					}
+				}
+			}
 			
-			players.get(0).testWeapon(players.get(1), delta);
-			players.get(1).testWeapon(players.get(0), delta);
-			
-			boxs.update(delta, players.get(0), players.get(1));
+			boxs.update(delta, players);
 	
-			for(Personnage p : players)
+			for(Player p : players)
 				p.update(delta);
 			
 			computeCamera(delta);
@@ -451,10 +461,12 @@ public class Game implements Screen
 	float cameraScroll = 0;
 	private void computeCamera(float delta)
 	{
-		float centerx = players.get(0).getX() + players.get(1).getX();
-		centerx /= 2;
-		float centery = players.get(0).getY() + players.get(1).getY();
-		centery /= 2;
+		float centerx = 0;
+		for(Player p : players) centerx += p.getX();
+		centerx /= players.size();
+		float centery = 0;
+		for(Player p : players) centery += p.getY();
+		centery /= players.size();
 		
 		float lerp = 0.05f;
 		Vector3 position = camera.position;

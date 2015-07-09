@@ -1,6 +1,6 @@
 package boxs;
 
-import game.Personnage;
+import game.Player;
 import weapons.BaseballBat;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -34,7 +34,7 @@ public class BaseballBox extends Box
 	}
 	
 	@Override
-	public void action(Personnage personnage)
+	public void action(Player personnage)
 	{
 		personnage.setWeapon(new BaseballBat());
 	}

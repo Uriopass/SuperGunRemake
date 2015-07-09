@@ -1,6 +1,6 @@
 package entities;
 
-import game.Personnage;
+import game.Player;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Polygon;
@@ -19,7 +19,7 @@ public class EntityTest extends Entity
 	}
 
 	@Override
-	public void onPlayerHit(Personnage hit)
+	public void onPlayerHit(Player hit)
 	{
 		hit.addLife(0);
 		hit.setVx(-10);

@@ -1,7 +1,7 @@
 package boxs;
 
 import weapons.Shotgun;
-import game.Personnage;
+import game.Player;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
@@ -34,7 +34,7 @@ public class ShotgunBox extends Box
 	}
 	
 	@Override
-	public void action(Personnage personnage)
+	public void action(Player personnage)
 	{
 		personnage.setWeapon(new Shotgun());
 	}

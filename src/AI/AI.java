@@ -1,6 +1,6 @@
 package AI;
 
-import game.Personnage;
+import game.Player;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -78,7 +78,7 @@ public class AI
 		n.links.clear(n.nodes);
 	}
 	
-	public void update(Personnage me, Personnage enemy, float delta)
+	public void update(Player me, Player enemy, float delta)
 	{
 		if(Options.get("advancedIA"))
 		{
@@ -95,7 +95,7 @@ public class AI
 		}
 	}
 	boolean once = true;
-	private void smartAI(Personnage me, Personnage enemy, float delta)
+	private void smartAI(Player me, Player enemy, float delta)
 	{
 		Coord mepos = n.getNearest(me.getX()/256, me.getY()/256);
 		Coord youpos = n.getNearest(enemy.getX()/256, enemy.getY()/256);
@@ -143,7 +143,7 @@ public class AI
 	
 	float random, randomcount = 1;
 	
-	private boolean isInTheAir(Personnage pers)
+	private boolean isInTheAir(Player pers)
 	{
 		for(Polygon p : pers.getCollisions())
 		{
@@ -157,7 +157,7 @@ public class AI
 		return true;
 	}
 	
-	private void iDontKnowWhatToDo(Personnage me, Personnage enemy, float delta)
+	private void iDontKnowWhatToDo(Player me, Player enemy, float delta)
 	{
 		me.jump();
 		if(middlex > me.getX())
@@ -166,7 +166,7 @@ public class AI
 			me.move(false, delta);
 	}
 	
-	private void dumbAI(Personnage me, Personnage enemy, float delta)
+	private void dumbAI(Player me, Player enemy, float delta)
 	{
 		randomcount -= delta;
 		if(randomcount < 0)

@@ -10,12 +10,12 @@ import entities.Entity;
 public class WorldEntities
 {
 	ArrayList<Entity> entities;
-	ArrayList<Personnage> toTest;
+	ArrayList<Player> toTest;
 	
 	public WorldEntities()
 	{
 		entities = new ArrayList<Entity>();
-		toTest = new ArrayList<Personnage>();
+		toTest = new ArrayList<Player>();
 	}
 	
 	public void addEntity(Entity e)
@@ -23,7 +23,7 @@ public class WorldEntities
 		entities.add(e);
 	}
 	
-	public void addPersonnage(Personnage p)
+	public void addPersonnage(Player p)
 	{
 		toTest.add(p);
 	}
@@ -45,7 +45,7 @@ public class WorldEntities
 				}
 			}
 			
-			for(Personnage p : toTest)
+			for(Player p : toTest)
 			{
 				if(e.playerTest(p))
 				{

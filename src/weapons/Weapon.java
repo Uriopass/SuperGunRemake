@@ -1,6 +1,6 @@
 package weapons;
 
-import game.Personnage;
+import game.Player;
 
 import com.badlogic.gdx.graphics.Texture;
 
@@ -14,7 +14,7 @@ public class Weapon
 	int paddingx, paddingy;
 
 	int ammo, maxammo;
-	Personnage owner;
+	Player owner;
 	
 	public Weapon()
 	{
@@ -61,7 +61,7 @@ public class Weapon
 		}
 	}
 	
-	public void setOwner(Personnage owner)
+	public void setOwner(Player owner)
 	{
 		this.owner = owner;
 	}
@@ -91,7 +91,7 @@ public class Weapon
 		
 	}
 
-	public void testHit(Personnage pers, float delta)
+	public void testHit(Player pers, float delta)
 	{
 		
 	}

@@ -33,7 +33,7 @@ import data.GSB;
 import data.SpriteManager;
 import data.TextureManager;
 
-public class Personnage
+public class Player
 {
 	Animation sprite;
 	public int id;
@@ -78,7 +78,7 @@ public class Personnage
 	
 	Weapon weapon;
 	
-	Personnage enemy;
+	Player enemy;
 	
 	BitmapFont weaponText = null;
 	
@@ -88,7 +88,7 @@ public class Personnage
 	public Game g;
 	
 	
-	public Personnage(int id, int dieY, Game g)
+	public Player(int id, int dieY, Game g)
 	{
 		this.g = g;
 		this.dieY = dieY;
@@ -129,7 +129,7 @@ public class Personnage
 		sprite.setPlayMode(PlayMode.LOOP);
 	}
 	
-	public void setEnnemy(Personnage ennemy)
+	public void setEnnemy(Player ennemy)
 	{
 		this.enemy = ennemy;
 	}
@@ -557,7 +557,7 @@ public class Personnage
 		return false;
 	}
 
-	public void testWeapon(Personnage enemy, float delta)
+	public void testWeapon(Player enemy, float delta)
 	{
 		enemy.getWeapon().testHit(this, delta);
 	}

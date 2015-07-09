@@ -251,7 +251,7 @@ public class MapMenu implements Screen
 						y -= 150;
 					}
 				}
-				if(oldSelected.equals(selected))
+				if(oldSelected.equals(selected) && !selected.equals(""))
 				{
 					start.forceClick();
 				}

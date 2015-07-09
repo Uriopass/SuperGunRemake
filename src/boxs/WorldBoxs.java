@@ -1,6 +1,6 @@
 package boxs;
 
-import game.Personnage;
+import game.Player;
 
 import java.util.ArrayList;
 
@@ -41,7 +41,7 @@ public class WorldBoxs
 		this.m = m;
 	}
 	
-	public void update(float delta, Personnage gentil, Personnage mechant)
+	public void update(float delta, ArrayList<Player> players)
 	{
 		time += delta;
 		if(time > 1)
@@ -82,11 +82,11 @@ public class WorldBoxs
 			{
 				b.position.setY(b.position.getY() - 10*delta*60);
 			}
-			for(Polygon p : gentil.getCollisions())
+			for(Polygon p : players.get(0).getCollisions())
 			{
-				if(gentil.isCollision(p, b.getBoundingBox()))
+				if(players.get(0).isCollision(p, b.getBoundingBox()))
 				{
-					while(gentil.isCollision(p, b.getBoundingBox()))
+					while(players.get(0).isCollision(p, b.getBoundingBox()))
 					{
 						b.position.setY(b.position.getY() + 3);
 					}
@@ -94,9 +94,10 @@ public class WorldBoxs
 				}
 			}
 		}
-		
-		gentil.testBoxs(boxs);
-		mechant.testBoxs(boxs);
+		for(Player p : players)
+		{
+			p.testBoxs(boxs);
+		}
 	}
 	
 	private Coord getCoord()

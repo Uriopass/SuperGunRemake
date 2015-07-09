@@ -1,5 +1,7 @@
 package weapons;
 
+import screens.Game;
+import screens.Options;
 import data.SoundManager;
 
 public class BaseballBat extends MeleeWeapon
@@ -30,6 +32,16 @@ public class BaseballBat extends MeleeWeapon
 	@Override
 	protected void onSwing()
 	{
-		SoundManager.get("swoosh.ogg").play();
+		if(Options.get("sound"))
+		{
+			if(Game.isGameSlowed())
+			{
+				SoundManager.get("swoosh.ogg").play(1, 0.5f, 0);
+			}
+			else
+			{
+				SoundManager.get("swoosh.ogg").play();
+			}
+		}
 	}
 }

@@ -21,7 +21,7 @@ import data.GSB;
 
 public class MainMenu implements Screen
 {
-	BigButton play, exit, options;
+	BigButton play, exit, tutorial, options;
 	ArrayList<ParticleEmitter> pe = new ArrayList<ParticleEmitter>();
 	ParticleEmitter mouse;
 	
@@ -55,6 +55,16 @@ public class MainMenu implements Screen
 
 		options.setLocation(play.getX(), play.getY()-play.getHeight());
 		
+		tutorial = new BigButton("Tutorial")
+		{
+			@Override
+			protected void onClick()
+			{
+				((com.badlogic.gdx.Game)Gdx.app.getApplicationListener()).setScreen(new Tutorial());
+			}
+		};
+		
+		tutorial.setLocation(options.getX(), options.getY()-options.getHeight());
 		
 		exit = new BigButton("Exit")
 		{
@@ -64,7 +74,7 @@ public class MainMenu implements Screen
 				Gdx.app.exit();
 			}
 		};
-		exit.setLocation(options.getX(), options.getY()-options.getHeight());
+		exit.setLocation(tutorial.getX(), tutorial.getY()-tutorial.getHeight());
 
 		update = new BigButton("Update")
 		{
@@ -127,6 +137,7 @@ public class MainMenu implements Screen
 			GSB.hud.begin();
 				play.render(0);
 				options.render(0);
+				tutorial.render(0);
 				exit.render(0);
 			GSB.hud.end();
 		}
@@ -146,6 +157,7 @@ public class MainMenu implements Screen
 			speed+=.01f;
 			play.update();
 			exit.update();
+			tutorial.update();
 			options.update();
 			if(Gdx.input.isButtonPressed(Input.Buttons.LEFT))
 			{

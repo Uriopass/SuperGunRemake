@@ -1,6 +1,6 @@
 package weapons;
 
-import game.Personnage;
+import game.Player;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
@@ -79,7 +79,7 @@ public class MeleeWeapon extends Weapon
 	boolean alreadyhit = false;
 	
 	@Override
-	public void testHit(Personnage pers, float delta)
+	public void testHit(Player pers, float delta)
 	{
 		if(attacking && down && !pers.isInvicible())
 		{

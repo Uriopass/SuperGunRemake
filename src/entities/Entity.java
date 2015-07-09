@@ -1,6 +1,6 @@
 package entities;
 
-import game.Personnage;
+import game.Player;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Intersector;
@@ -19,7 +19,7 @@ public abstract class Entity
 	
 	public boolean delete;
 	
-	abstract public void onPlayerHit(Personnage hit);
+	abstract public void onPlayerHit(Player hit);
 	
 	abstract public void render();
 	
@@ -37,7 +37,7 @@ public abstract class Entity
 		return Intersector.overlapConvexPolygons(p, a);
 	}
 	
-	public boolean playerTest(Personnage p)
+	public boolean playerTest(Player p)
 	{
 		return p.getHitbox().overlaps(hitbox);
 	}

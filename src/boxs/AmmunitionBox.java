@@ -1,6 +1,6 @@
 package boxs;
 
-import game.Personnage;
+import game.Player;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
@@ -20,7 +20,7 @@ public class AmmunitionBox extends Box
 		image = new Sprite(SpriteManager.get("ammobox.png"));
 	}
 	@Override
-	public void action(Personnage personnage)
+	public void action(Player personnage)
 	{
 		personnage.getWeapon().setMaxAmmo(personnage.getWeapon().getMaxAmmo());
 	}

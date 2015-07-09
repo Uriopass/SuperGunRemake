@@ -117,6 +117,25 @@ public class Editor implements Screen
 	{
 		Gdx.gl.glClearColor(1, 1, 1, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		
+		GSB.srCam.begin(ShapeType.Filled);
+		{
+			int miny = (int)((Game.camera.position.y)/256);
+			int minx = (int)((Game.camera.position.x)/256);
+			int width = (int) ((Gdx.graphics.getWidth()/256)*Game.camera.zoom+10);
+			int height = (int) ((Gdx.graphics.getHeight()/256)*Game.camera.zoom+10);
+			for(int i =  miny - height/2 ; i < miny + height/2 ; i++)
+			{
+				GSB.srCam.rect((minx - width/2)*256, i*256, width*256, 3);
+			}
+			
+			for(int i =  minx - width/2 ; i < minx + width/2 ; i++)
+			{
+				GSB.srCam.rect(i*256, (miny - height/2)*256, 3, height*256);
+			}
+		}
+		GSB.srCam.end();
+		
 		map.render(delta);
 
 		GSB.sb.begin();
@@ -154,7 +173,7 @@ public class Editor implements Screen
 			GSB.srCam.end();
 		Gdx.gl.glDisable(GL20.GL_BLEND);
 		}
-
+		
 		GSB.srHud.begin(ShapeType.Filled);
 		{
 			 Gdx.gl.glEnable(GL20.GL_BLEND);
@@ -230,7 +249,10 @@ public class Editor implements Screen
 	
 	public void update(float delta, int gridx, int gridy, float x, float y)
 	{
-		
+		if(Gdx.input.isKeyJustPressed(Input.Keys.S))
+		{
+			changemode.forceClick();
+		}
 		if(Gdx.input.isButtonPressed(Input.Buttons.RIGHT) && !Gdx.input.justTouched())
 		{
 			Game.camera.translate((lastClick.x - Gdx.input.getX())*Game.camera.zoom, 0);

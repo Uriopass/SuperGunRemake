@@ -1,6 +1,6 @@
 package boxs;
 
-import game.Personnage;
+import game.Player;
 
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Rectangle;
@@ -38,7 +38,7 @@ public class Box
 		image.draw(GSB.sb);
 	}
 
-	public void action(Personnage personnage)
+	public void action(Player personnage)
 	{
 		
 	}
